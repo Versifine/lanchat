@@ -80,6 +80,13 @@ assets/                  架构图、压测原始数据、界面截图
 - 20 MB 文件 multipart 上传：平均 **160.21 MB/s**，SHA-256 全部一致；21 MB 触发 413/1006。
 - 已知瓶颈：建连时全量 `userList` 广播存在 O(N²) 风暴（并发建连场景），广播为 O(N) 扇出；详见压测 README 的"瓶颈观察与建议"。
 
+## 课程报告
+
+- 报告母本：[report/report.md](report/report.md)（Markdown，可用 `report/build_docx.py --auto-toc` 重新生成 docx）
+- 终稿（docx / PDF）：见 [GitHub Releases](https://github.com/Versifine/lanchat/releases)
+- 图表与压测原始数据：[report/figs](report/figs)、[assets/bench](assets/bench)
+- 报告排版说明：[report/README.md](report/README.md)
+
 ## AI 工程化说明
 
 本项目按课程建议的 SDD 流程开发：需求 → 规格（SPEC）→ 可验收评测集 → AI agent 产出代码 → 人工审批高风险动作 → 自动化验证。过程记录见 `docs/ai-devlog.md`，发布地址见仓库 About。
