@@ -1,82 +1,54 @@
-# LanChat 五分钟录屏讲稿（开发过程 / 架构 / 代码为主）
+# LanChat 录屏讲稿（开发过程 / AI 工程化 / 架构 / 代码为主）
 
-> 用途：在本机录制一段 5 分钟项目介绍视频，发给课程老师。**不需要上台。**
-> 讲解配比：功能速览约 40 秒（前端一句话带过），其余约 4 分钟全部放在**开发过程思路、系统架构、代码走读**上。
-> 真实性约束见第 5 节：**不预设假聊天记录、不编造未发生的故事**，每个说法都能在仓库里查到证据。
+> 用途：在本机录一段项目介绍视频发给课程老师，**不需要上台**。
+> 默认时长约 **6:45**（内容比 5 分钟版充实：开场项目介绍、Shell 工程规模展示、完整功能演示、开发思路、AI 开发配合 SDD 流程图、架构图逐节点讲解、代码走读）。若必须压到 5 分钟，见第 7 节删减表。
+> 真实性约束见第 6 节：**不预设假聊天记录、不编未发生的故事**，所有说法都有仓库内证据。
 
 ---
 
-## 1. 录制前准备（一次性，约 20 分钟）
+## 1. 录制前准备（约 20 分钟，一次性）
 
-### 1.1 本机环境（已核实）
+### 1.1 环境（已核实）
 
 | 项 | 值 |
 |---|---|
 | 桌面 | niri（Wayland），工作区按输出独立 |
-| 输出 | 笔记本 `eDP-1` 2880×1800@1.75（逻辑 1645×1028）；外接 `HDMI-A-1` 1920×1080@1x |
-| 录屏工具 | `wf-recorder`（原生，推荐）、`gpu-screen-recorder`（备选） |
-| 麦克风源 | `alsa_input.pci-0000_64_00.6.analog-stereo`（用 `pactl list short sources` 可复查） |
-| 编辑器 | VS Code（`code`） |
+| 输出 | 外接 `HDMI-A-1` 1920×1080@1x（推荐录制）；笔记本 `eDP-1` 2880×1800@1.75 |
+| 录屏 | `wf-recorder`（已验证可用） |
+| 麦克风源 | `alsa_input.pci-0000_64_00.6.analog-stereo` |
+| 编辑器 | VS Code |
 | 图片查看 | `loupe` |
 | 浏览器 | Chrome（flatpak） |
-| 服务端口 | http://localhost:8081 |
+| 服务 | http://localhost:8081（当前已运行） |
 
-> **推荐录制 `HDMI-A-1`（1920×1080，16:9，缩放 1）**：窗口字号正常、编码压力小。
-> 若只用笔记本屏，录 `eDP-1` 也可以，但录制分辨率会是 2880×1800，建议用 `gpu-screen-recorder` 走 GPU 编码。
+### 1.2 演示账号（已预先注册好，空历史）
 
-### 1.2 真实数据准备（关键：不预置、不编造聊天记录）
-
-视频里的聊天消息**全部在录制时现场输入**。为此先清空数据库，只保留两个账号、零条聊天记录：
-
-```bash
-# ① 停掉现有服务（如果正在运行）
-pkill -f 'lanchat-backend.jar' || true
-sleep 1
-
-# ② 清空运行时数据（只删 gitignored 的 data/，不影响代码）
-cd /home/versi/Projects/Java
-rm -rf data
-
-# ③ 启动服务（干净库，首次启动自动建表）
-nohup java -jar backend/target/lanchat-backend.jar >/tmp/lanchat-demo-server.log 2>&1 &
-sleep 6
-curl -s -o /dev/null -w '服务状态 %{http_code}（401 表示正常需登录）\n' http://localhost:8081/api/users
-```
-
-**账号已预先注册好**（2026-11-18 由助手完成，空历史）：
-
-| 账号 | 密码 | 昵称 | 状态 |
-|---|---|---|---|
-| `demo_alice` | `demo_alice123` | 爱丽丝 | 已注册，未登录 |
-| `demo_bob` | `demo_bob123` | 鲍勃 | 已注册，未登录 |
-
-当前数据库：用户 2 行、消息 0 行、文件 0 行——**没有任何聊天记录**，视频里的每条消息都是现场输入。
-
-录制前只需两个登录动作（不录）：
-
-1. 普通 Chrome 窗口打开 `http://localhost:8081` → 用 `demo_alice / demo_alice123` 登录 → 进入聊天页后 **点右上角「退出」回到登录页**（视频从这里开始录）。
-2. 无痕 Chrome 窗口打开 `http://localhost:8081` → 用 `demo_bob / demo_bob123` 登录 → 保持登录状态，停在群聊页。
-
-> 如果换了机器或重新清库，再按下面的原始注册步骤手动注册即可：
-> 普通窗口注册 `demo_alice / demo_alice123`（昵称爱丽丝）→ 退出；无痕窗口注册 `demo_bob / demo_bob123`（昵称鲍勃）→ 保持登录。
-
-完成后状态：
-
-- 爱丽丝：已注册、已退出，停在登录页；
-- 鲍勃：已登录、在线；
-- 群聊历史为空（**没有任何预置对话**，视频里发出的每条消息都是现场真实输入）。
-
-### 1.3 niri 窗口布局（5 个工作区）
-
-> 工作区按输出独立。先把鼠标移到**录制输出**上点一下（确保焦点在该输出），再打开/移动窗口。
-
-| 工作区 | 用途 | 窗口 |
+| 账号 | 密码 | 昵称 |
 |---|---|---|
-| WS1 | 功能速览 | 两个 Chrome 窗口左右两列各 50%：爱丽丝（普通）、鲍勃（无痕） |
-| WS2 | 开发过程 | VS Code 窗口（打开 docs 四个文件）+ 终端窗口（可查 git log / 文件树） |
-| WS3 | 架构 | `loupe` 打开 `report/figs/fig-05-01-architecture.png`；同目录可左右键切 `fig-08-01-sdd-workflow.png` |
-| WS4 | 代码走读 | 另一个 VS Code 窗口，左右分屏：后端两个类 + 前端 ws.js |
-| WS5 | 结果 | Chrome 标签页：GitHub Release、报告 PDF（由本地静态服务提供） |
+| `demo_alice` | `demo_alice123` | 爱丽丝 |
+| `demo_bob` | `demo_bob123` | 鲍勃 |
+
+当前数据库：用户 2 行、消息 0 行、文件 0 行——**没有任何聊天记录**，视频里的消息全部现场输入。
+（如果重新清库/换机器，再手动注册；见文末附录。）
+
+录制前只做两个登录动作（不录）：
+
+1. 普通 Chrome 窗口打开 `http://localhost:8081` → `demo_alice / demo_alice123` 登录 → 进入聊天页后点右上角「退出」回到登录页（视频从这里开始录）。
+2. 无痕窗口打开 `http://localhost:8081` → `demo_bob / demo_bob123` 登录 → 保持登录，停在群聊页。
+
+### 1.3 niri 窗口布局（7 个工作区）
+
+> 工作区按输出独立。先把鼠标移到**录制输出（外接屏）**上点一下确保焦点，再打开/移动窗口。
+
+| 工作区 | 用途 | 窗口内容 |
+|---|---|---|
+| WS1 | 功能演示 | Chrome 普通窗口（爱丽丝）+ Chrome 无痕窗口（鲍勃），左右各 50% |
+| WS2 | Shell 展示 | 终端（仓库根目录），开场展示工程规模，后面用于断线重连演示 |
+| WS3 | 开发过程 | VS Code：`docs/SPEC.md`、`docs/api.md`、`skills/lanchat-sdd/SKILL.md`、`docs/ai-devlog.md` |
+| WS4 | AI 开发图 | `loupe` 打开 `report/figs/fig-08-01-sdd-workflow.png` |
+| WS5 | 系统架构图 | `loupe` 打开 `report/figs/fig-05-01-architecture.png` |
+| WS6 | 代码走读 | VS Code：`ChatWebSocketHandler.java`、`JdbcMessageRepository.java`、`frontend/src/api/ws.js` |
+| WS7 | 结果 | Chrome：GitHub Release 页 + 本地报告 PDF（静态服务提供） |
 
 预开窗口命令（在仓库根目录执行）：
 
@@ -84,27 +56,24 @@ curl -s -o /dev/null -w '服务状态 %{http_code}（401 表示正常需登录�
 cd /home/versi/Projects/Java
 CHROME="$HOME/.local/share/flatpak/exports/bin/com.google.Chrome"
 
-# 功能演示两个窗口（先都打开，登录/注册按 1.2 做）
+# WS1 功能演示两个窗口
 "$CHROME" --new-window "http://localhost:8081" &
 "$CHROME" --incognito --new-window "http://localhost:8081" &
 
-# 开发过程：VS Code 打开文档
+# WS3 开发过程文档
 code -n docs/SPEC.md docs/api.md skills/lanchat-sdd/SKILL.md docs/ai-devlog.md &
 
-# 代码走读：VS Code 打开三个文件
+# WS6 代码走读
 code -n \
   backend/src/main/java/com/lanchat/adapter/in/ws/ChatWebSocketHandler.java \
   backend/src/main/java/com/lanchat/adapter/out/persistence/JdbcMessageRepository.java \
   frontend/src/api/ws.js &
 
-# 架构图查看器（文件本体在 report/figs/，下面这条命令直接打开）
+# WS4 AI 开发流程图 / WS5 系统架构图
+loupe report/figs/fig-08-01-sdd-workflow.png &
 loupe report/figs/fig-05-01-architecture.png &
 
-# 如果要在 Chrome 里展示架构图：复制到"下载"目录再打开（flatpak Chrome 读不到 ~/Projects）
-cp report/figs/fig-05-01-architecture.png "$HOME/下载/LanChat-架构图.png" &
-# Chrome 打开： file:///home/versi/下载/LanChat-架构图.png
-
-# 结果页：报告 PDF 用本地静态服务给 Chrome 看（flatpak Chrome 读不到 ~/Projects）
+# WS7 结果页：报告 PDF 用本地静态服务（flatpak Chrome 读不到 ~/Projects）
 mkdir -p /tmp/lanchat-showcase
 cp "report/课程报告-（姓名）-（学号）.pdf" /tmp/lanchat-showcase/lanchat-report.pdf
 (cd /tmp/lanchat-showcase && nohup python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/lanchat-http.log 2>&1 &)
@@ -112,223 +81,326 @@ cp "report/课程报告-（姓名）-（学号）.pdf" /tmp/lanchat-showcase/lan
 "$CHROME" --new-window "https://github.com/Versifine/lanchat/releases/tag/v1.0.0" &
 ```
 
-把窗口放到对应工作区（先聚焦窗口，再执行；也可用你习惯的 `Mod+Shift+1..9`）：
+摆窗口（先聚焦窗口再执行，或用你习惯的 `Mod+Shift+1..7`）：
 
 ```bash
-niri msg action move-window-to-workspace 1   # 把当前窗口移到工作区 1
-niri msg action focus-workspace 2            # 切到工作区 2（作用于当前聚焦输出）
-niri msg action set-column-width "50%"       # 把当前列调成半屏（WS1 两列各 50%）
+niri msg action move-window-to-workspace 1     # 移到工作区 1
+niri msg action focus-workspace 2              # 切到工作区 2（作用于当前聚焦输出）
+niri msg action set-column-width "50%"         # 当前列半屏（WS1 两列各 50%）
 ```
 
-> WS1 两列等宽：选中 Chrome 窗口 → `set-column-width "50%"`；另一个窗口同样操作。
-> WS4 左右分屏：VS Code 里 `Ctrl+\` 拆分编辑器，左放后端类、右放前端 ws.js。
-> 键位以你本机 niri 配置为准，`niri msg workspaces` 可确认各工作区状态。
+> WS6 代码分屏：VS Code 里 `Ctrl+\` 拆分，左放后端两个类，右放前端 `ws.js`。
+> `niri msg workspaces` 可以确认各工作区状态。
 
-### 1.4 录制命令
+### 1.4 录制命令（已在本机验证）
 
 ```bash
-# 推荐：录制外接屏 + 同时录麦克风；Ctrl+C 停止
+# 录制外接屏 + 同录麦克风；Ctrl+C 停止
 wf-recorder -o HDMI-A-1 -r 30 \
   --audio="alsa_input.pci-0000_64_00.6.analog-stereo" \
   -f "$HOME/Videos/lanchat-demo-$(date +%H%M).mp4"
 ```
 
-> 本机已实测：上面的命令产出 **1920×1080 / 30fps / VP9 视频 + Opus 音频** 的 mp4，可直接播放。
-> 30fps 对界面录屏足够；60fps 体积更大且编码更重，不必要。
-> 如果老师电脑的播放器不支持 VP9，转成通用 H.264（本机已验证 libopenh264 可用）：
-> ```bash
-> ffmpeg -i 原始.mp4 -c:v libopenh264 -b:v 8M -c:a aac -b:a 128k 输出-H264.mp4
-> ```
-> （已安装 `gpu-screen-recorder` 可作为备选，但本机未验证，不建议第一次就用它。）
+> 实测产出：1920×1080 / 30fps / VP9 视频 + Opus 音频。
+> 若老师播放器不支持 VP9，转通用 H.264（libopenh264 已验证可用）：
+> `ffmpeg -i 原始.mp4 -c:v libopenh264 -b:v 8M -c:a aac -b:a 128k 输出-H264.mp4`
 
-- 先试录 10 秒，`ffprobe -hide_banner 文件.mp4` 确认有画面、有音轨，再正式录。
-- 录前把通知静音：`makoctl dismiss -a 2>/dev/null || true`；不想录进顶栏可临时 `pkill waybar`，录完再 `waybar &`。
-- 全程用 niri 切工作区（`Mod+2`、`Mod+3`…），鼠标移动放慢，点击前先停 0.5 秒。
+- 先试录 10 秒，`ffprobe -hide_banner 文件.mp4` 确认有画面、有音轨。
+- 录前静音通知：`makoctl dismiss -a 2>/dev/null || true`；不想录顶栏可临时 `pkill waybar`，录完 `waybar &`。
 
 ---
 
-## 2. 时间分配（总计 5:00）
+## 2. 时间轴（总计 6:45）
 
-| 时间 | 内容 | 重点程度 |
-|---|---|---|
-| 0:00–0:20 | 开场：项目一句话 + 本次讲解重点 | — |
-| 0:20–1:00 | 功能速览（前端一句带过，消息现场输入） | 简略 |
-| 1:00–2:30 | **开发过程：规格 → 契约 → Skill → 评测集 → Agent → 人工审批** | 重点 |
-| 2:30–3:20 | **系统架构：分层、依赖方向、数据与安全** | 重点 |
-| 3:20–4:35 | **代码走读：WS 消息处理、离线补发、前端连接管理** | 重点 |
-| 4:35–5:00 | 结果与交付：测试、性能、仓库、报告 | — |
-
----
-
-## 3. 逐段台词与屏幕操作
-
-### 0:00–0:20 开场（WS1）
-
-**屏幕**：停在 WS1，两个浏览器窗口并排。
-
-**台词**：
-"老师好，我是计算机科学与技术 24-4 班的（姓名），这是我的课程项目 LanChat 局域网聊天室。左边是爱丽丝，右边无痕窗口是鲍勃，两个账号连同一个 Java 服务端。这个视频里功能只快速过一遍，重点讲三块：**开发过程怎么走的、系统架构怎么设计的、关键代码怎么写的**。"
+| 时间 | 内容 | 工作区 | 详略 |
+|---|---|---|---|
+| 0:00–0:40 | 开场：项目一段话 + 技术栈 + 规模 | WS1 | 必留 |
+| 0:40–1:10 | Shell 展示：工程规模/提交历史/测试汇总（可选现场跑测试） | WS2 | 必留 |
+| 1:10–3:00 | 功能全展示（注册入口/登录/在线/群聊/历史/私聊/离线补发/文件/暗色） | WS1 | 必留（断线重连可选 +20s） |
+| 3:00–4:15 | 开发过程思路（为什么规格先行、契约、架构选型、数据库、实时方案、安全） | WS3 | 重点 |
+| 4:15–4:55 | AI 开发：对照 SDD 流程图讲（规格→Agent→审批→回需求→验证→发布） | WS4 | 重点 |
+| 4:55–6:05 | 系统架构：对照架构图逐层/逐箭头讲清楚 | WS5 | 重点 |
+| 6:05–6:35 | 代码走读：WS 消息处理 / 离线补发 / 前端连接管理 | WS6 | 重点 |
+| 6:35–6:45 | 结果与收尾 | WS7 | 必留 |
 
 ---
 
-### 0:20–1:00 功能速览（WS1，40 秒）
+## 3. 逐段台词与操作
 
-**屏幕 1（约 10 秒）**：爱丽丝窗口停在登录页，输入 `demo_alice / demo_alice123`，点「LOG IN / 登 录」进入聊天页。
+### 0:00–0:40 开场：项目与技术栈（WS1）
 
-**台词**：
-"前端是 Vue 3 + Element Plus 的单页应用，视觉走纸张感的编辑排版风格，没有用彩色渐变。登录用 JWT，登录成功建立 WebSocket 长连接。"
+**屏幕**：WS1，两个 Chrome 窗口并排（爱丽丝停在登录页，鲍勃在群聊）。
 
-**屏幕 2（约 12 秒）**：爱丽丝在群聊输入框输入「这是现场发送的群聊演示消息」→ 回车；镜头转向鲍勃窗口，消息实时出现；鲍勃回一条「鲍勃窗口收到，实时显示」。
-
-**台词**：
-"这是群聊：服务端先落库再广播，两个窗口都能实时看到，时间戳由服务端统一。**这两条消息是我现在当场输入的，没有预置历史记录**，一会儿代码里会看到它确实写进了 SQLite。"
-
-**屏幕 3（约 10 秒）**：爱丽丝点左侧「鲍勃」进入私聊，发送「这是一条现场发送的私聊消息」；鲍勃窗口收到。
-
-**台词**：
-"私聊只推给指定用户，其他人收不到；如果对方离线，消息会入库，等对方上线补发一次。"
-
-**屏幕 4（约 8 秒）**：爱丽丝发文件 `report/figs/fig-05-01-architecture.png`，切鲍勃窗口看文件卡片。
-
-**台词**：
-"文件通过 HTTP 上传，服务端计算 SHA-256 并入库，再通过 WebSocket 通知接收方。"
+**台词（一段完整介绍，可直接念）**：
+"老师好，我是计算机科学与技术 24-4 班的（姓名），这是我的课程项目 **LanChat 局域网聊天室**。它是一个前后端分离的 B/S 即时通信系统：浏览器里是 Vue 3 + Vite + Element Plus 的单页应用；服务端是 Java 21 + Spring Boot 3.5，用 SQLite 持久化，认证用 JWT，实时消息用 WebSocket，另外提供 REST 接口和 Swagger 文档。工程目前后端 72 个 Java 文件、前端 18 个源文件，有 160 个自动化测试用例，已经发布在 GitHub（Versifine/lanchat），有 v1.0 Release 和 26 页课程报告。这个视频里我按四块讲：**功能全貌、开发过程思路、AI 工程化怎么用的、以及系统架构和关键代码**。"
 
 ---
 
-### 1:00–2:30 开发过程（WS2，90 秒，重点 1）
+### 0:40–1:10 Shell 展示：项目规模与质量（WS2，可选现场跑测试）
 
-**屏幕**：切到 WS2，VS Code 里依次展示四个文档（每个停留 10–15 秒），最后切终端看 `git log`。
+**屏幕**：切到 WS2 终端（仓库根目录）。
 
-**展示 1：`docs/SPEC.md`**
+**操作 1（依次执行，约 10 秒）**：
 
-**台词**：
-"项目不是直接写代码，而是先按规格驱动的方式做。第一步需求分析，写成可验收的规格：功能需求、性能指标、安全要求，每一条都带验收标准，比如 500 连接下 P95 延迟不超过 200 毫秒、密码必须用 PBKDF2 加盐存储。"
-
-**展示 2：`docs/api.md`**
-
-**台词**：
-"第二步是把前后端接口写成唯一契约：REST 路径、WebSocket 消息类型、错误码，字段名精确到 camelCase，前端和后端各自按它实现，联调时不需要翻对方代码。"
-
-**展示 3：`skills/lanchat-sdd/SKILL.md`**
-
-**台词**：
-"第三步把它落成开发规约，也就是课程说的 skill：分层规则、依赖方向、构建和验收命令、哪些高风险动作必须人工审批。后面所有 AI agent 开工前先读这份规约。"
-
-**展示 4：`docs/eval-plan.md`**
+```bash
+cd /home/versi/Projects/Java
+find backend/src/main/java -name '*.java' | wc -l        # 输出 72
+find frontend/src -type f | wc -l                        # 输出 18
+git log --oneline | wc -l                                # 提交总数（现场看到多少个就念多少个）
+git log --oneline -8
+cat assets/test-report/summary.txt                       # 输出：总用例=160 失败=0 错误=0 跳过=0
+```
 
 **台词**：
-"第四步是评测集，也就是先写验收用例：功能用例、安全用例、性能用例；这样‘做完了’有客观标准，不是自己说了算。"
+"先看看工程本身：后端 72 个 Java 文件，前端 18 个源文件；这个仓库的提交历史记录的是真实的迭代过程；测试汇总里 160 个用例、0 失败。这些数字都可以在仓库里直接查。"
 
-**屏幕**：切终端，执行 `git log --oneline -12` 和 `ls docs skills`。
+**操作 2（可选，现场跑测试，约 25 秒；不想拖时长可跳过，直接进入功能演示）**：
 
-**台词**：
-"然后才是分工实现：主控把任务拆到共享任务板，限定每个 agent 的写入范围；后端、前端、测试、报告分别由不同的 AI agent 并行产出，我负责规格、审批、验收和关键决策。整个过程记在 AI 开发日志里，包括两次真实的需求回调：最初想做 RPC 框架，考虑到报告评审更看重看得见的功能，改成聊天室；最初是 Swing 桌面端，后来改成前后端分离。还有测试阶段发现的两个真实缺陷——文件名扩展名正则写成了精确 12 位、SQLite 唯一约束异常没被翻译成 409——修完都回归到了 160 个用例全过。这些记录和提交历史都能查，不是事后编的。"
+```bash
+mvn -f backend/pom.xml test 2>&1 | grep -E 'Tests run:|BUILD' | tail -3
+```
+
+**台词（若现场跑）**：
+"也可以现场跑一遍：`mvn test`，160 个用例全部通过，构建成功。"
 
 ---
 
-### 2:30–3:20 系统架构（WS3，50 秒，重点 2）
+### 1:10–3:00 功能全展示（WS1）
 
-**屏幕**：切 WS3，架构图全屏。
+> 前端只在这里出现，后面不再展开；每条消息都是现场输入，没有预置聊天记录。
+
+**① 登录页与注册（约 12 秒）**
+
+**操作**：爱丽丝窗口停在登录页。先点「注册」tab 展示注册表单字段（用户名/昵称/密码），再点回「登录」；输入 `demo_alice / demo_alice123` 登录。
 
 **台词**：
-"这是系统总体架构。浏览器端是 Vue 3，通过 REST 和 WebSocket 连到 Spring Boot。后端按整洁架构分层：adapter 层做协议转换，in 这一侧有 REST 控制器和 WebSocket Handler 两个适配器；application 层是 Auth、Chat、User、File 四个用例服务；domain 层是纯 Java 的实体和端口接口，不依赖 Spring 和 JDBC；adapter/out 实现端口，落到 SQLite 和本地文件存储。依赖方向只允许由外向内，所以业务逻辑改起来不用动框架。"
+"这是登录页，前端是 Vue 3 + Element Plus，视觉是纸张感的编辑排版风格，没有彩色渐变。登录和注册共用一套表单校验；登录成功用 JWT 换取身份，并建立 WebSocket 长连接。"
 
-**可选操作**：`loupe` 里切到 `fig-08-01-sdd-workflow.png`（若有需要再讲一句 SDD 流程图）。
+**② 聊天主界面与在线列表（约 10 秒）**
 
-**台词（继续）**：
-"数据层三张表：用户、消息、文件；SQLite 开了 WAL，单文件零部署。安全上是 JWT 加 PBKDF2、全部 SQL 参数化、消息纯文本渲染防 XSS、上传文件名清洗。压测也暴露了真实瓶颈：建连时全量在线列表广播是 O(N²)，500 连接同时建连会广播风暴，报告里如实写了，后续改成增量或合并推送。"
+**操作**：登录后进入三栏界面，指向顶栏 `ONLINE 2` 和左侧在线用户。
+
+**台词**：
+"主界面分三栏：左侧在线用户和群聊入口，中间消息区，下面是输入区。顶栏显示在线人数和连接状态，在线状态是服务端通过 WebSocket 实时推送的。"
+
+**③ 群聊 + 历史持久化（约 20 秒）**
+
+**操作**：爱丽丝发「这是现场发送的群聊演示消息」→ 指向鲍勃窗口（实时收到）→ 鲍勃回「鲍勃窗口收到，实时显示」→ 爱丽丝窗口刷新页面（`Ctrl+R`）→ 历史消息还在。
+
+**台词**：
+"群聊消息先落库再广播，两个窗口实时同步，时间戳由服务端统一。刷新页面后消息还在，说明历史是持久化的，不是内存里的假数据。"
+
+**④ 私聊 + 未读（约 12 秒）**
+
+**操作**：鲍勃给爱丽丝发一条私聊（或爱丽丝点左侧鲍勃进入私聊发一条）→ 指向未读红点/私聊会话。
+
+**台词**：
+"私聊只推送给指定用户，其他人在线也收不到；不在当前会话的消息会在侧栏显示未读计数。"
+
+**⑤ 离线消息补发（约 25 秒，重点）**
+
+**操作**：
+1. 鲍勃窗口点右上角「退出」→ 确认退出；
+2. 爱丽丝给鲍勃发一条私聊：「这是一条离线消息，鲍勃现在不在线」；
+3. 鲍勃重新登录 `demo_bob / demo_bob123`；
+4. 指向鲍勃收到的消息，带 `OFFLINE` 标记。
+
+**台词**：
+"这是离线补发：接收方不在线时，私聊消息先入库；对方重新登录后，服务端把未投递的消息补发一次，前端标记为 OFFLINE。这条消息现在是真实写在数据库里的。"
+
+**⑥ 文件传输（约 15 秒）**
+
+**操作**：爱丽丝在私聊里点回形针 → 选 `report/figs/fig-05-01-architecture.png` → 发送 → 指向鲍勃收到的文件卡片（大小、SHA-256、DOWNLOAD）。
+
+**台词**：
+"文件走 HTTP multipart 上传：服务端清洗文件名、限制大小、流式落盘并计算 SHA-256，元数据入库；如果指定接收人，会通过 WebSocket 通知对方，接收方点 DOWNLOAD 下载。"
+
+**⑦ 暗色模式（约 5 秒）**
+
+**操作**：点顶栏 `LIGHT / DARK` 切换。
+
+**台词**：
+"界面支持深色模式，同一套设计变量切换，偏好会持久化。"
+
+**⑧（可选 +20 秒）断线重连**
+
+**操作**：切到 WS2 终端 `Ctrl+C` 停服务 → 两个窗口出现「连接断开，正在重连…」→ 重新启动服务（`java -jar backend/target/lanchat-backend.jar &`）→ 约 2–5 秒后自动恢复。
+
+**台词**：
+"断线重连：服务端重启时前端会提示正在重连，并按 1、2、4、8、16、30 秒退避重试，恢复后自动重新拉取历史。"
 
 ---
 
-### 3:20–4:35 代码走读（WS4，75 秒，重点 3）
+### 3:00–4:15 开发过程思路（WS3，重点）
 
-**屏幕**：切 WS4，VS Code 左半屏 `ChatWebSocketHandler.java`，讲完切右半屏 `JdbcMessageRepository.java`，最后 `Ctrl+P` 打开 `frontend/src/api/ws.js`。
+**屏幕**：WS3，VS Code 依次展示四个文档；终端可辅助 `git log`。
 
-**代码 1：`ChatWebSocketHandler.java`（约 30 秒）**
+**展示 `docs/SPEC.md`（约 15 秒）**
 
-**台词**：
-"WebSocket 收到一条聊天消息后的主流程在这里：先从会话属性拿 JWT 解出的用户身份，**不信任消息体里的发送者字段**；然后校验消息长度和频率限流；再交给应用层用例落库；最后根据有没有接收人决定群聊广播还是私聊推送。整个过程在业务层完成，Handler 只做协议转换。"
+**台词（讲思路，不只是念文件）**：
+"先说思路。我一开始没有直接让 AI 写代码，而是先把'怎样算做完'定义出来。需求分析拆成三类：功能需求、量化的性能需求（比如 500 连接下 P95 延迟不超过 200 毫秒）、安全需求（密码存储、上传校验、限流）。每条需求都带验收标准，这样后面代码是不是真的完成，不靠感觉判断。"
 
-**代码 2：`JdbcMessageRepository.java`（约 25 秒）**
-
-**台词**：
-"离线补发的关键在这个方法：用户上线时，在一个事务里先查出所有未投递的私聊消息，再统一把 delivered 置 1，避免并发登录时重复补发。SQL 全部 PreparedStatement 参数化。"
-
-**代码 3：`frontend/src/api/ws.js`（约 20 秒）**
+**展示 `docs/api.md`（约 15 秒）**
 
 **台词**：
-"前端这块只做连接管理：用 token 建连、每 10 秒心跳、断线后按 1、2、4、8、16、30 秒指数退避重连，收到消息按类型分发给状态层。消息渲染是纯文本插值，没有 v-html，避免 XSS。"
+"第二步是契约先行。前后端是两套技术栈，不能共享运行时代码，所以把 REST 路径、WebSocket 消息类型、错误码写成唯一契约，字段名精确到大小写。两边并行开发时不用读对方代码，联调只对契约。这是前后端分离的代价，也是它最大的工程收益。"
 
-**补充一句（约 5 秒）**：
-"这些代码是 AI agent 按前面的规格和评测集产出的，我逐块 review 和验收，报告第 8 章写了这个过程。"
+**展示 `skills/lanchat-sdd/SKILL.md`（约 15 秒）**
+
+**台词**：
+"第三步把契约和规约落成 skill：项目结构、分层规则、构建和验收命令、哪些高风险动作必须人工审批。所有 AI agent 开工前先读这份 skill，相当于给它们的开发手册。"
+
+**展示 `docs/eval-plan.md`（约 15 秒）**
+
+**台词**：
+"第四步是评测集：先写验收用例——功能用例、安全用例、性能用例，再写实现。这样'做完了'有客观标准，AI 生成的代码也必须过这道门。"
+
+**切终端 `git log --oneline -8`（约 10 秒）+ 回到 VS Code `docs/ai-devlog.md`**
+
+**台词（开发思路总结）**：
+"然后是几个关键设计决策：架构上选整洁架构，因为业务代码不该依赖 Spring 和数据库；模块用单 Maven 模块加包分层，规模小，简单优先。数据库选 SQLite，零部署、单文件，开 WAL 处理并发读写。实时方案选 WebSocket，因为轮询延迟太高——报告里有实测对比，WebSocket 的 P95 约 327 毫秒，3 秒轮询是 3 秒级。文件用 multipart 加 SHA-256，简单可靠，分片续传留作未来工作。安全上用 JWT 无状态认证、PBKDF2 加盐、SQL 全参数化、纯文本渲染防 XSS、上传校验和限流。整个过程记录在 AI 开发日志里，包括两次真实的需求回调：最初想做 RPC 框架，考虑到报告评审更看重看得见的功能，改成聊天室；最初是 Swing 桌面端，后来改成前后端分离。"
 
 ---
 
-### 4:35–5:00 结果与交付（WS5，25 秒）
+### 4:15–4:55 AI 开发：对照 SDD 流程图（WS4，重点）
 
-**屏幕**：切 WS5，Chrome 停在 GitHub Release 页面；可快速滚到报告 PDF 第一页。
+**屏幕**：WS4，`fig-08-01-sdd-workflow.png` 全屏。
 
-**台词**：
-"结果是：160 个 JUnit 用例全部通过；500 并发连接下消息延迟 P50 10.1、P95 21.4、P99 31.2 毫秒，向 500 个连接广播的吞吐约 1066 条每秒；20MB 文件上传平均 160MB/s。项目已发布在 GitHub 的 Versifine/lanchat，有 v1.0 Release 和 26 页课程报告，压缩包里一条 `java -jar lanchat.jar` 就能复现。以上就是我的项目介绍，谢谢老师。"
+**台词（按图走）**：
+"这张图就是项目的 AI 工程化流程。最上面'需求与规格'：课程需求先变成 SPEC，再把开发规约写成 Skill。中间'AI Agent 执行'：AI Agent 编码和测试 Agent 并行，后端、前端、测试各是一个独立 agent，有各自的共享任务和写入范围，避免互相踩文件。右边'人工审批与纠偏'：建公开仓库、发布、改契约这类高风险动作必须有人确认；如果方向不对，就走'回需求重定义边界'回头改规格——这个项目真实发生了两次，图里也标了：RPC 框架改成聊天室、Swing 改成前后端分离。最下面'验证与交付'：160 个用例加真实压测数据作为自动化验证，最后才是报告和 GitHub 发布。另外测试阶段还发现两个真实缺陷（扩展名正则、SQLite 唯一约束没翻译成 409），修完回归全过，日志和提交里都有记录。"
 
 ---
 
-## 4. 操作速查卡（录制时手边放）
+### 4:55–6:05 系统架构：对照架构图逐层讲（WS5，重点）
+
+**屏幕**：WS5，`fig-05-01-architecture.png` 全屏。按从左到右、再上下讲。
+
+**台词（按图逐块）**：
+"这张是系统总体架构，我按数据流讲一遍。最左边是浏览器用户；中间蓝色块是 Vue 3 前端，里面用 Element Plus 做组件、Pinia 做状态、Axios 做请求。前端有两条路进后端：一条是 REST 接口 `/api/**`，走 JSON；另一条是 WebSocket 服务 `/ws/chat`，走实时消息。这两条路都落在 Spring Boot 这个单体服务里，端口 8081。
+
+进入服务端后，看到的是整洁架构的分层：上面这层是适配器——REST 接口由 Spring MVC 的控制器处理，WebSocket 由 Handler 处理，它们只做协议转换；中间是应用层用例，Auth、Chat、User、File 四个服务，承载业务逻辑；右边是领域层，放实体和端口接口，它不依赖 Spring 也不依赖数据库。再往右是适配器实现：JdbcTemplate 写 SQLite，流式读写本地文件存储。依赖方向只允许由外向内：adapter 依赖 application，application 依赖 domain，domain 不依赖任何东西，所以换框架、换数据库不影响业务代码。上面的红色节点是认证：登录时校验密码并签发 JWT，之后 REST 用 Bearer token、WebSocket 握手用 token 参数，服务端校验 token 后拿到用户身份。
+
+数据上是三张表：用户、消息、文件；SQLite 开了 WAL，压测中 1000 多条每秒持续写入没有出现锁错误。安全方面还有：密码 PBKDF2 加盐、SQL 全部参数化、消息纯文本渲染、上传文件名清洗、消息与登录限流。图下面四个卡片分别是前端、后端分层、安全与数据、部署形态——部署上就是一个进程，前端构建产物由后端静态托管，一条 `java -jar` 命令就能跑起来。
+
+也要说明一个诚实的局限：压测暴露了建连高峰时全量在线列表广播的 O(N²) 问题，报告里写了，后续改成增量或合并推送。"
+
+---
+
+### 6:05–6:35 代码走读（WS6，重点）
+
+**屏幕**：WS6，VS Code 左半屏后端，右半屏前端。
+
+**代码 1：`ChatWebSocketHandler.java`（约 15 秒）**
+
+**台词**：
+"WebSocket 收到一条聊天消息后的主流程在这里：先从会话属性拿 JWT 解出的用户身份，不信任消息体里的发送者字段；校验消息长度和频率限流；再交给应用层落库；最后根据有没有接收人决定群聊广播还是私聊推送。Handler 只做协议转换。"
+
+**代码 2：`JdbcMessageRepository.java`（约 10 秒）**
+
+**台词**：
+"离线补发的关键：用户上线时，在一个事务里查出所有未投递私聊，再统一把 delivered 置 1，避免并发登录重复补发；SQL 全部参数化。"
+
+**代码 3：`frontend/src/api/ws.js`（约 10 秒）**
+
+**台词**：
+"前端只做连接管理：token 建连、10 秒心跳、断线按 1 到 30 秒指数退避重连、按消息类型分发；消息按纯文本渲染，防 XSS。这些代码是 AI agent 按前面的规格和评测集产出的，我逐块 review 和验收，报告第 8 章有记录。"
+
+---
+
+### 6:35–6:45 结果与收尾（WS7）
+
+**屏幕**：切 WS7，Chrome 停在 GitHub Release 页；可切到报告 PDF 第一页。
+
+**台词**：
+"最后是结果：160 个用例全过；500 并发连接下消息延迟 P50 10.1、P95 21.4、P99 31.2 毫秒，投递率 100%；20MB 文件上传平均 160MB/s；轮询对比实验里 WebSocket 的延迟比 3 秒轮询低一个数量级。项目已发布在 GitHub 的 Versifine/lanchat，有 v1.0 Release 和 26 页课程报告，压缩包里一条 `java -jar lanchat.jar` 就能复现。以上是我的项目介绍，谢谢老师。"
+
+---
+
+## 4. 操作速查卡
 
 | 操作 | 命令/按键 |
 |---|---|
-| 切换工作区 | `Mod+2`…`Mod+5`（或 `niri msg action focus-workspace N`） |
-| 开始录制 | 终端执行第 1.4 节命令，确认开始后等 2 秒再操作 |
-| 停止录制 | 回到录制终端按 `Ctrl+C` |
-| 切 VS Code 文件 | `Ctrl+P` 输入文件名 |
-| VS Code 左右分屏 | `Ctrl+\` |
-| 切浏览器标签 | `Ctrl+Tab` |
+| 切工作区 | `Mod+1` … `Mod+7`（或 `niri msg action focus-workspace N`） |
+| 开始/停止录制 | 终端执行 1.4 命令；停止按 `Ctrl+C` |
+| 切 VS Code 文件 | `Ctrl+P` |
+| VS Code 分屏 | `Ctrl+\` |
+| 断线重连演示 | WS2 终端 `Ctrl+C` 停服务，2 秒后 `java -jar backend/target/lanchat-backend.jar &` 重启 |
 | 避免鼠标抖动 | 点击前停 0.5 秒，移动放慢 |
 
 ---
 
-## 5. 真实性约束（必须遵守）
+## 5. 需求覆盖对照（功能全展示的依据）
 
-1. **不编造聊天记录**：录制前清空 `data/`；视频里所有消息都是现场输入；旁白明确说“现在发送的是演示消息”。不要恢复旧库里的历史对话，也不要为了画面好看预先灌数据。
-2. **不编造未发生的故事**：只讲真实发生过的事（方案回调、缺陷、压测、审批），每条都能在 `docs/ai-devlog.md`、git 提交、`assets/bench/`、`assets/test-report/` 里查到。
-3. **数字不许美化**：性能数字与 `assets/bench/bench_summary.csv` 一致；同时如实说局限（1000 连接未测、500 连接短时运行、userList 广播瓶颈）。
-4. **不冒充他人**：不虚构老师反馈、不虚构团队分工之外的角色；AI agent 的产出就说“AI agent 按规格产出，我验收和修订”。
-5. 如果录制中口误说了不准确的话，**停机重录那一段**，不要用剪辑掩盖成“事实”。
-
-### 证据索引（每个说法的出处）
-
-| 视频中的说法 | 证据位置 |
+| 功能 | 视频中展示位置 |
 |---|---|
-| 160 个测试用例、功能/安全覆盖 | `assets/test-report/summary.txt`、`assets/test-report/surefire-reports/` |
-| 500 连接延迟 P50/P95/P99、吞吐 | `assets/bench/bench_summary.csv`、`assets/bench/README.md` |
-| 20MB 上传 160MB/s | `assets/bench/file_upload.csv` |
-| 轮询 vs WebSocket 对比 | `assets/bench/polling_vs_ws.csv` |
+| 注册 / 登录 / JWT / 登出 | 功能①，离线补发时也出现登出再登录 |
+| 在线状态与用户列表 | 功能②，顶栏 `ONLINE 2` |
+| 群聊、历史消息持久化 | 功能③，含刷新页面后历史仍在 |
+| 私聊、未读计数 | 功能④ |
+| 离线消息补发（OFFLINE 标记） | 功能⑤ |
+| 文件上传/下载、SHA-256 校验 | 功能⑥ |
+| 暗色模式 | 功能⑦ |
+| 心跳与断线自动重连 | 功能⑧（可选现场演示）+ 代码走读 |
+| 消息长度/频率限制、登录限流 | 不现场展示，测试用例与架构讲解中说明 |
+| 重复登录踢下线、Swagger 接口文档 | 不现场展示，报告中说明；Swagger 地址 `http://localhost:8081/swagger-ui.html` |
+
+---
+
+## 6. 真实性约束（必须遵守）
+
+1. **不编造聊天记录**：当前数据库为空（用户 2、消息 0、文件 0）；视频里所有消息现场输入；旁白说明"这是现场发送的演示消息"。不要恢复旧库或预灌数据。
+2. **不编未发生的故事**：只讲真实发生过的事（两次方案回调、两个缺陷、压测数据、审批），证据见下表。
+3. **数字不美化**：性能数字与 `assets/bench/bench_summary.csv` 一致；同时如实说局限（1000 连接未测、500 连接短时运行、userList 广播瓶颈）。
+4. **不虚构他人**：不编老师反馈、不编不存在的团队成员；AI agent 产出就说"AI agent 按规格产出，我验收修订"。
+5. 口误了停机重录那一段，不用剪辑掩盖成"事实"。
+
+### 证据索引
+
+| 说法 | 证据位置 |
+|---|---|
+| 72 个 Java 文件 / 18 个前端源文件 / 提交历史 | 仓库根目录执行 `find`、`git log --oneline` |
+| 160 个用例全过 | `assets/test-report/summary.txt`、`assets/test-report/surefire-reports/` |
+| 500 连接延迟、吞吐、轮询对比、上传速度 | `assets/bench/bench_summary.csv`、`assets/bench/README.md`、`assets/bench/polling_vs_ws.csv`、`assets/bench/file_upload.csv` |
 | 规格/契约/评测集/skill | `docs/SPEC.md`、`docs/api.md`、`docs/eval-plan.md`、`skills/lanchat-sdd/SKILL.md` |
-| 两次方案回调、两个缺陷 | `docs/ai-devlog.md`、`git log --oneline` |
-| 架构分层与依赖方向 | `report/figs/fig-05-01-architecture.png`、`docs/SPEC.md` 第 5 节 |
-| 代码行为 | 第 3 节点名的三个源文件 |
+| 两次方案回调、两个缺陷、审批 | `docs/ai-devlog.md`、`git log --oneline` |
+| 架构分层、数据表、安全设计 | `report/figs/fig-05-01-architecture.png`、`docs/SPEC.md` |
+| SDD 流程 | `report/figs/fig-08-01-sdd-workflow.png`、`docs/ai-devlog.md` |
+| 代码行为 | 代码走读点名的三个源文件 |
 | 26 页报告与发布 | `report/课程报告-（姓名）-（学号）.pdf`、GitHub Release |
 
 ---
 
-## 6. 录后收尾
+## 7. 压缩到 5 分钟的删减表
 
-1. 检查视频：`ffprobe -hide_banner -show_streams ~/Videos/lanchat-demo-*.mp4 | grep -E 'codec_type|width|height|duration'`
-2. 命名：`LanChat项目介绍-（姓名）-（学号）.mp4`（或按老师要求的格式）。
-3. 如果时长超 5:10，优先压缩"功能速览"（从 40 秒压到 25 秒），不要压缩代码和架构部分。
-4. 上传到课程平台/发给老师；必要时同时附上 `（学号）_（姓名）.zip` 和 GitHub 地址。
-5. 录制用的服务与静态服务可以保留或关闭：
-   ```bash
-   pkill -f 'lanchat-backend.jar'
-   pkill -f 'http.server 8000'
-   ```
+| 砍掉 | 节省 | 说明 |
+|---|---|---|
+| Shell 现场跑 `mvn test`（保留 `cat summary.txt`） | 20s | 只保留即时输出的规模/汇总展示 |
+| 功能⑤离线补发 | 25s | 功能表里注明"离线补发已由测试覆盖"，或只在报告里讲 |
+| 功能⑧断线重连现场演示 | 20s | 默认就是可选项，不演示 |
+| 开发过程思路压到 45s | 30s | 只讲规格先行 + 契约 + 两个选型理由 |
+| 架构讲解压到 45s | 25s | 只讲分层与依赖方向，卡片略过 |
+| 代码走读压到 20s | 10s | 只讲 `ChatWebSocketHandler` 一个类 |
+
+按上表删减后约 **5:00**；保留标"重点"的段落和开场这段话即可。
 
 ---
 
-## 附：如果老师看完视频后追问（可选准备）
+## 附：如果重新清库时的手动注册步骤
 
-- **为什么前后端分离？**：报告评审和演示需要零安装、界面直接可见；契约用 `docs/api.md` 固定，两端可以独立实现。
-- **AI 参与了多少？**：规格、评测集、审批和验收由我负责，代码和测试由多个 AI agent 按规格产出；`docs/ai-devlog.md` 有完整记录，包括两次需求回调和缺陷修复。
-- **性能可信吗？**：压测客户端是 JDK 标准库自己写的，独立干净库实例、`-Xmx512m`，原始 CSV 在 `assets/bench/`，报告第 7 章有环境、参数和瓶颈分析。
-- **安全做了哪些？**：JWT、PBKDF2 加盐、SQL 参数化、纯文本渲染防 XSS、上传校验与路径清洗、限流、日志脱敏，均有自动化用例。
-- **SQLite 撑得住吗？**：WAL 下 1000+ 消息/秒持续写入无锁错误；瓶颈不在数据库，而在建连高峰的全量在线列表广播。
+```bash
+pkill -f 'lanchat-backend.jar' || true
+cd /home/versi/Projects/Java && rm -rf data
+nohup java -jar backend/target/lanchat-backend.jar >/tmp/lanchat-demo-server.log 2>&1 &
+sleep 6
+# 普通 Chrome 注册 demo_alice / demo_alice123（昵称 爱丽丝）→ 退出
+# 无痕 Chrome 注册 demo_bob / demo_bob123（昵称 鲍勃）→ 保持登录
+```
+
+## 附：录后收尾
+
+1. 检查：`ffprobe -hide_banner ~/Videos/lanchat-demo-*.mp4 | grep -E 'Stream|Duration'`
+2. 命名：`LanChat项目介绍-（姓名）-（学号）.mp4`
+3. 如超过 7:00，按第 7 节删减重录或剪辑（优先压前两段）。
+4. 需要转码：`ffmpeg -i 原始.mp4 -c:v libopenh264 -b:v 8M -c:a aac -b:a 128k 最终.mp4`
+5. 与服务一起提交：`（学号）_（姓名）.zip` 与 GitHub 地址。
+6. 关闭录制服务：`pkill -f 'lanchat-backend.jar'`、`pkill -f 'http.server 8000'`
