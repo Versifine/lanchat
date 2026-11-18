@@ -1,0 +1,55 @@
+server:
+  port: 8080
+  # 优雅关闭
+  shutdown: graceful
+
+spring:
+  application:
+    name: lanchat
+  lifecycle:
+    timeout-per-shutdown-phase: 10s
+  datasource:
+    # SQLite：WAL 模式 + busy_timeout，缓解写锁
+    url: jdbc:sqlite:data/lanchat.db?journal_mode=WAL&busy_timeout=5000&foreign_keys=on
+    driver-class-name: org.sqlite.JDBC
+    hikari:
+      maximum-pool-size: 4
+      minimum-idle: 1
+      pool-name: lanchat-sqlite-pool
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 21MB
+  web:
+    resources:
+      static-locations: classpath:/static/
+  jackson:
+    default-property-inclusion: non_null
+
+# 业务配置
+lanchat:
+  jwt:
+    # 开发默认值；课程演示可保留，生产必须改为环境变量注入的 32+ 字节随机串
+    secret: "${LANCHAT_JWT_SECRET:lanchat-dev-secret-key-please-change-32bytes-min}"
+    ttl-hours: 24
+  upload:
+    dir: data/uploads
+    max-size-bytes: 20971520
+  history:
+    limit: 50
+  heartbeat:
+    # 服务端超过该时长未收到任何 WS 消息即判定客户端离线（毫秒）
+    timeout-ms: 35000
+  rate-limit:
+    login-fail-per-minute: 5
+    messages-per-second: 20
+
+logging:
+  level:
+    com.lanchat: INFO
+  file:
+    name: logs/lanchat.log

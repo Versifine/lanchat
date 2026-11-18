@@ -1,0 +1,33 @@
+# 构建产物
+backend/target/
+frontend/dist/
+frontend/node_modules/
+backend/src/main/resources/static/
+*.class
+*.jar
+
+# 运行时数据（SQLite / 上传文件 / 日志）
+data/
+logs/
+*.log
+*.db
+*.db-wal
+*.db-shm
+
+# IDE / 系统
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+.DS_Store
+
+# 课程原始材料（不进入公开仓库）
+Java语言及网络编程课程报告说明.docx
+
+# 报告排版临时产物
+report/*.docx
+report/*.pdf
+report/*.toc.json
+report/.venv/
