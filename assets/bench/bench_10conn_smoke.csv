@@ -1,0 +1,8 @@
+elapsed_s,connections,sent_delta,frames_delta,echo_delta,error_frames_delta,closed_connections_total,ws_errors_total,rest_last_ms,client_heap_used_mb,backend_rss_mb
+1,10,0,63,0,0,0,0,19,10,342
+2,10,10,100,10,0,0,0,21,12,342
+3,10,10,100,10,0,0,0,6,13,343
+4,10,10,100,10,0,0,0,7,13,343
+5,10,10,100,10,0,0,0,4,13,343
+6,10,10,100,10,0,0,0,5,14,343
+7,10,10,100,10,0,0,0,5,14,343

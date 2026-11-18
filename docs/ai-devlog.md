@@ -66,3 +66,13 @@
 
 - 每个开发节点的 agent 产出、测试结果、压测数据。
 - 至少一次"验收不通过 → 回需求重定义边界"的迭代记录。
+
+## 2026-11-18 11:20–11:35 测试阶段与缺陷修复（QA + 后端 agent 协作）
+
+- **qa-dev**（task-3 进行中）：完成 25 个测试类、158 个 JUnit 用例（单元/仓储/REST 集成/WS 集成/安全用例），首轮全绿；随后编写压测工具 `tools/bench/BenchMain.java`（JDK HttpClient/WebSocket，连接数/延迟/吞吐/资源）与 `PollingVsWsMain.java`（轮询 vs WebSocket 对比），产出 `assets/bench/*.csv`。
+- **QA 发现 2 个真实缺陷并报告**（未自行改主代码）：
+  - BUG-1：`FileNameCleaner` 的扩展名正则误写成精确 `{12}`，导致 `.pdf/.txt/.sh` 等常规扩展名全部丢失，落盘文件无扩展名；
+  - BUG-2：sqlite-jdbc 唯一约束异常 SQLState=null、errorCode=19，Spring 无法翻译为 `DuplicateKeyException`，并发注册同一用户名时输的一方返回 500/1012 而非 409/1002。
+- **backend-dev 修复**（只改 main 代码）：BUG-1 改为 `{1,12}` 上界并复用同一扩展名规则；BUG-2 新增 `DataAccessException` 兜底识别（errorCode=19 / SQLState 23xxx / UNIQUE 关键字）→ `BusinessException(1002)`。
+- **验证**：隔离实例 21/21（落盘 UUID+.pdf/.gz/.sh、超长扩展名丢弃、路径穿越仍被清洗；20 线程并发注册 1×200 + 19×409 + 0×500）；`mvn test` 157/158，唯一失败是 QA 按旧行为写的断言（已交 QA 更新为 1002），属预期。
+- **过程价值**：这是课程要求的"测试发现问题 → 修复 → 回归"的真实闭环，报告"系统验证"与"AI 工程化实践"章节引用。

@@ -27,8 +27,13 @@ public final class FileNameCleaner {
     private static final int MAX_EXTENSION_LENGTH = 12;
     private static final String FALLBACK_NAME = "unnamed";
     private static final Pattern ILLEGAL_CHARS = Pattern.compile("[\\\\/:*?\"<>|\\p{Cntrl}]");
-    private static final Pattern SAFE_EXTENSION = Pattern.compile("[A-Za-z0-9]{" + MAX_EXTENSION_LENGTH + "}");
-    private static final Pattern ALNUM_EXTENSION = Pattern.compile("[A-Za-z0-9]+");
+    /**
+     * 安全扩展名：1~12 位字母/数字（不含点本身，返回时统一在扩展名前补 "."）。
+     *
+     * <p>注意量词是 {1,N} 而不是 {N}：扩展名长度是上界而不是精确值，
+     * 否则 .pdf / .txt / .sh 等常规扩展名都会被判为非法。</p>
+     */
+    private static final Pattern SAFE_EXTENSION = Pattern.compile("[A-Za-z0-9]{1," + MAX_EXTENSION_LENGTH + "}");
 
     private FileNameCleaner() {
     }
@@ -76,9 +81,10 @@ public final class FileNameCleaner {
             return "";
         }
         String extension = safeName.substring(dot + 1);
-        if (extension.length() > MAX_EXTENSION_LENGTH || !SAFE_EXTENSION.matcher(extension).matches()) {
+        if (!SAFE_EXTENSION.matcher(extension).matches()) {
             return "";
         }
+        // 扩展名统一小写并在前面补 "."（多段扩展名如 .tar.gz 只保留最后一段 .gz）
         return "." + extension.toLowerCase();
     }
 
@@ -94,13 +100,11 @@ public final class FileNameCleaner {
     }
 
     private static String shorten(String name) {
-        int dot = name.lastIndexOf('.');
-        if (dot > 0 && dot < name.length() - 1) {
-            String extension = name.substring(dot + 1);
-            if (extension.length() <= MAX_EXTENSION_LENGTH && ALNUM_EXTENSION.matcher(extension).matches()) {
-                int keep = Math.max(1, MAX_NAME_LENGTH - extension.length() - 1);
-                return name.substring(0, keep) + "." + extension;
-            }
+        // 复用 safeExtension 的同一套规则，保证“截断后保留的扩展名”与落盘扩展名判定一致
+        String extension = safeExtension(name);
+        if (!extension.isEmpty()) {
+            int keep = Math.max(1, MAX_NAME_LENGTH - extension.length());
+            return name.substring(0, keep) + extension;
         }
         return name.substring(0, MAX_NAME_LENGTH);
     }
