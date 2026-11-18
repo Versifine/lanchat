@@ -1,0 +1,8 @@
+round,file_mb,http_code,time_total_s,speed_upload_mbps,size_upload_bytes,sha256_match,note
+1,20,200,0.137779,145.16,20971738,yes,"单连接 multipart 上传 20MB"
+2,20,200,0.124402,160.77,20971738,yes,"单连接 multipart 上传 20MB"
+3,20,200,0.119856,166.87,20971738,yes,"单连接 multipart 上传 20MB"
+4,20,200,0.122487,163.28,20971738,yes,"单连接 multipart 上传 20MB"
+5,20,200,0.121225,164.98,20971738,yes,"单连接 multipart 上传 20MB"
+avg,20,200,,160.21,,yes,"5 轮平均上传吞吐（EV-PERF-05 目标 ≥ 20 MB/s）"
+oversize,21,413,0.004493,,1835008,,"EV-SEC-06 21MB 上传应 413/1006（响应 code=1006）"

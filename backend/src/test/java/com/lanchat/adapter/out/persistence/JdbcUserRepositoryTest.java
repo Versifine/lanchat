@@ -53,18 +53,52 @@ class JdbcUserRepositoryTest extends SqliteRepositoryTestSupport {
     }
 
     @Test
-    void duplicateUsernameShouldBeRejectedByUniqueConstraint() {
+    void duplicateUsernameShouldBeRejectedWithBusinessCode1002() {
         repository.insert("alice", "爱丽丝", validPasswordHash(), 1L);
 
         Throwable throwable = catchThrowable(() ->
                 repository.insert("alice", "另一个爱丽丝", validPasswordHash(), 2L));
 
-        // 唯一约束必须生效（EV-FUNC-02 的兜底）。
-        // 已知实现问题（已报告 Lead）：sqlite-jdbc 的唯一约束异常没有被 Spring 翻译成
-        // DuplicateKeyException，而是 UncategorizedSQLException，导致 JdbcUserRepository
-        // 里 `catch (DuplicateKeyException)` 的 1002 兜底在 SQLite 下不生效，
-        // 并发注册竞争时会返回 500/1012 而不是 409/1002。
-        assertThat(throwable).isInstanceOf(DataAccessException.class);
+        // 唯一约束兜底：sqlite-jdbc 的约束冲突（errorCode=19）必须被翻译成业务错误 1002，
+        // 否则并发注册竞争时输的一方会返回 500/1012（EV-FUNC-02 / SEC-03 的兜底路径）。
+        assertThat(throwable).isInstanceOf(BusinessException.class);
+        assertThat(((BusinessException) throwable).code()).isEqualTo(1002);
+        assertThat(countRows("users")).isEqualTo(1L);
+    }
+
+    @Test
+    void concurrentDuplicateRegistrationShouldYieldOneSuccessAndOne1002() throws Exception {
+        java.util.concurrent.ExecutorService pool = java.util.concurrent.Executors.newFixedThreadPool(2);
+        java.util.concurrent.CountDownLatch start = new java.util.concurrent.CountDownLatch(1);
+        java.util.List<Object> outcomes = java.util.Collections.synchronizedList(new java.util.ArrayList<>());
+        try {
+            for (int i = 0; i < 2; i++) {
+                final int worker = i;
+                pool.submit(() -> {
+                    start.await(5, java.util.concurrent.TimeUnit.SECONDS);
+                    try {
+                        repository.insert("race_user", "并发" + worker, validPasswordHash(), 10L + worker);
+                        outcomes.add("success");
+                    } catch (Throwable throwable) {
+                        outcomes.add(throwable);
+                    }
+                    return null;
+                });
+            }
+            start.countDown();
+            pool.shutdown();
+            assertThat(pool.awaitTermination(10, java.util.concurrent.TimeUnit.SECONDS)).isTrue();
+        } finally {
+            pool.shutdownNow();
+        }
+        long successCount = outcomes.stream().filter("success"::equals).count();
+        long conflictCount = outcomes.stream()
+                .filter(BusinessException.class::isInstance)
+                .map(BusinessException.class::cast)
+                .filter(error -> error.code() == 1002)
+                .count();
+        assertThat(successCount).as("并发注册成功数").isEqualTo(1);
+        assertThat(conflictCount).as("并发注册冲突返回 1002 数").isEqualTo(1);
         assertThat(countRows("users")).isEqualTo(1L);
     }
 

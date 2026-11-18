@@ -107,8 +107,18 @@ class FileNameCleanerTest {
     }
 
     @Test
-    void safeExtensionShouldAcceptExactlyTwelveAlphanumericChars() {
+    void safeExtensionShouldAcceptCommonExtensions() {
+        assertThat(FileNameCleaner.safeExtension("report.pdf")).isEqualTo(".pdf");
+        assertThat(FileNameCleaner.safeExtension("a.tar.gz")).isEqualTo(".gz");
+        assertThat(FileNameCleaner.safeExtension("报告.PDF")).isEqualTo(".pdf");
+        assertThat(FileNameCleaner.safeExtension("evil.sh")).isEqualTo(".sh");
+    }
+
+    @Test
+    void safeExtensionShouldAcceptTwelveAlphanumericCharsAsUpperBound() {
         assertThat(FileNameCleaner.safeExtension("archive.ABCDEFGHIJKL")).isEqualTo(".abcdefghijkl");
+        // 13 位超过上界 → 视为不安全，返回空
+        assertThat(FileNameCleaner.safeExtension("archive.ABCDEFGHIJKLM")).isEmpty();
     }
 
     @Test

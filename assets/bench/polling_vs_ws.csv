@@ -1,0 +1,3 @@
+scenario,duration_s,messages,avg_latency_ms,min_latency_ms,p50_ms,p95_ms,max_latency_ms,http_requests,ws_handshakes,requests_per_minute,bytes_received,bytes_per_message,msg_per_sec,notes
+WebSocket 推送,30,31,34.46,5.62,10.16,327.37,416.07,0,2,0.00,6190,199.7,1.03,"观察者 1 次 WS 握手后服务端主动推送"
+3s REST 轮询,30,27,2005.15,1003.81,2005.14,3006.03,3006.88,9,1,18.00,212700,7877.8,0.90,"观察者每 3000 ms 拉取 /api/messages/group?limit=200"

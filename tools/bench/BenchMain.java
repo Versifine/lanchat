@@ -53,6 +53,8 @@ public final class BenchMain {
     private static final DateTimeFormatter RUN_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final DateTimeFormatter FILE_STAMP_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
     private static final int MAX_CONNECTIONS = 1000;
+    /** WebSocket 接收窗口：一次性请求多个消息额度，避免逐帧 request(1) 造成接收停顿和 TCP 背压。 */
+    private static final int RECEIVE_WINDOW = 256;
     private static final int MAX_DURATION_SECONDS = 600;
 
     private BenchMain() {
@@ -95,6 +97,11 @@ public final class BenchMain {
                   --out <path>          时间线 CSV 路径，默认 assets/bench/bench_<n>conn[_tag].csv
                   --tag <name>          本轮标签（写入文件名与汇总）
                   --pid <pid>           后端进程 pid（默认自动探测 lanchat-backend.jar）
+                  --senders <n>         只让前 n 个连接发送消息（默认全部；用于定位广播瓶颈）
+                  --jitter              发送相位随机抖动（避免所有连接同一毫秒齐发）
+                  --settle-ms <ms>      压测结束后等待最后回显的毫秒数，默认 1500
+                  --warmup-seconds <s>  建连后先等待 s 秒（排空连接风暴）再开始发送，默认 0
+                  --connect-rate <n>    每秒建立 n 个连接（默认 0=全部并发；500 连接建议 20-50 避免 userList 风暴）
                   --no-rest-probe       压测期间不采样 GET /api/users
                   --probe-interval-ms   REST 采样间隔，默认 1000
                   --help                显示帮助
@@ -114,6 +121,11 @@ public final class BenchMain {
         private String tag = "";
         private long backendPid = -1L;
         private boolean restProbe = true;
+        private boolean jitter;
+        private int senderCount = -1;
+        private long settleMillis = 1_500L;
+        private int warmupSeconds = 0;
+        private int connectRate = 0;
         private int probeIntervalMs = 1000;
         private boolean help;
 
@@ -127,6 +139,10 @@ public final class BenchMain {
                 }
                 if ("--no-rest-probe".equals(raw)) {
                     config.restProbe = false;
+                    continue;
+                }
+                if ("--jitter".equals(raw)) {
+                    config.jitter = true;
                     continue;
                 }
                 String key = raw;
@@ -152,6 +168,10 @@ public final class BenchMain {
                     case "--tag" -> config.tag = value.replaceAll("[^A-Za-z0-9_-]", "_");
                     case "--pid" -> config.backendPid = Long.parseLong(value);
                     case "--probe-interval-ms" -> config.probeIntervalMs = parseInt(key, value);
+                    case "--senders" -> config.senderCount = parseInt(key, value);
+                    case "--settle-ms" -> config.settleMillis = parseInt(key, value);
+                    case "--warmup-seconds" -> config.warmupSeconds = parseInt(key, value);
+                    case "--connect-rate" -> config.connectRate = parseInt(key, value);
                     default -> throw new IllegalArgumentException("未知参数: " + key);
                 }
             }
@@ -177,6 +197,15 @@ public final class BenchMain {
             }
             if (config.probeIntervalMs < 100) {
                 config.probeIntervalMs = 100;
+            }
+            if (config.senderCount <= 0 || config.senderCount > config.connections) {
+                config.senderCount = config.connections;
+            }
+            if (config.settleMillis < 0) {
+                config.settleMillis = 0;
+            }
+            if (config.warmupSeconds < 0) {
+                config.warmupSeconds = 0;
             }
             return config;
         }
@@ -212,6 +241,11 @@ public final class BenchMain {
         private final AtomicLong framesReceived = new AtomicLong();
         private final AtomicLong ownEchoes = new AtomicLong();
         private final AtomicLong errorFrames = new AtomicLong();
+        private final AtomicLong messageFrames = new AtomicLong();
+        private final AtomicLong userListFrames = new AtomicLong();
+        private final AtomicLong pongFrames = new AtomicLong();
+        private final AtomicLong otherFrames = new AtomicLong();
+        private final AtomicLong bytesReceived = new AtomicLong();
         private final AtomicLong closedConnections = new AtomicLong();
         private final AtomicLong wsErrors = new AtomicLong();
         private final AtomicLong restRequests = new AtomicLong();
@@ -275,6 +309,12 @@ public final class BenchMain {
                 throw new IllegalStateException("没有任何 WebSocket 连接建立成功，终止压测");
             }
 
+            if (config.warmupSeconds > 0) {
+                System.out.println("[bench] 预热等待 " + config.warmupSeconds
+                        + " s（排空连接建立阶段的全量 userList 广播积压）...");
+                Thread.sleep(config.warmupSeconds * 1_000L);
+            }
+
             long loadStart = System.nanoTime();
             runLoad();
             double actualDurationSeconds = (System.nanoTime() - loadStart) / 1_000_000_000.0;
@@ -300,6 +340,10 @@ public final class BenchMain {
             System.out.println("[bench] 每连接速率  : " + config.rate + " msg/s（目标总发送速率 "
                     + String.format(Locale.ROOT, "%.1f", config.rate * config.connections) + " msg/s）");
             System.out.println("[bench] 持续时间    : " + config.durationSeconds + " s");
+            System.out.println("[bench] 建连速率    : "
+                    + (config.connectRate > 0 ? config.connectRate + " 连接/s（渐进建连）" : "全部并发"));
+            System.out.println("[bench] 发送连接    : " + config.senderCount + " / " + config.connections
+                    + "，相位抖动: " + (config.jitter ? "开启" : "关闭"));
             System.out.println("[bench] 标签        : " + (config.tag.isEmpty() ? "(无)" : config.tag));
             System.out.println("===========================================================");
         }
@@ -369,7 +413,18 @@ public final class BenchMain {
 
         private void connectClients() throws Exception {
             List<CompletableFuture<Void>> futures = new ArrayList<>();
+            long intervalNanos = config.connectRate > 0
+                    ? TimeUnit.SECONDS.toNanos(1) / config.connectRate
+                    : 0;
+            long nextStartNanos = System.nanoTime();
             for (int i = 0; i < config.connections; i++) {
+                if (intervalNanos > 0) {
+                    long wait = nextStartNanos - System.nanoTime();
+                    if (wait > 0) {
+                        LockSupport.parkNanos(wait);
+                    }
+                    nextStartNanos += intervalNanos;
+                }
                 final int index = i;
                 final long userId = userIds[i];
                 final String token = tokens[i];
@@ -378,7 +433,7 @@ public final class BenchMain {
                 CompletableFuture<WebSocket> building = httpClient.newWebSocketBuilder()
                         .connectTimeout(Duration.ofSeconds(20))
                         .buildAsync(uri, client);
-                futures.add(building.handle((webSocket, error) -> {
+                CompletableFuture<Void> handled = building.handle((webSocket, error) -> {
                     if (error != null) {
                         counters.connectFailed.incrementAndGet();
                         client.failReason = rootMessage(error);
@@ -391,10 +446,17 @@ public final class BenchMain {
                         counters.connectSuccess.incrementAndGet();
                     }
                     return null;
-                }));
+                });
+                futures.add(handled);
+                if (intervalNanos > 0) {
+                    // 渐进建连：前一个连接建立完成后再进入下一个，避免同一时刻批量建连
+                    handled.get(30, TimeUnit.SECONDS);
+                }
             }
-            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-                    .get(180, TimeUnit.SECONDS);
+            if (intervalNanos == 0) {
+                CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                        .get(180, TimeUnit.SECONDS);
+            }
         }
 
         private void printConnectionSummary(long connectMillis) {
@@ -422,9 +484,12 @@ public final class BenchMain {
 
             List<Thread> senderThreads = new ArrayList<>();
             for (WsClient client : clients) {
+                if (client.index >= config.senderCount) {
+                    continue;
+                }
                 Thread thread = Thread.ofVirtual()
                         .name("bench-sender-" + client.index)
-                        .unstarted(() -> client.sendLoop(endNanos, config.rate));
+                        .unstarted(() -> client.sendLoop(endNanos, config.rate, config.jitter));
                 senderThreads.add(thread);
                 thread.start();
             }
@@ -434,6 +499,7 @@ public final class BenchMain {
             long previousReceived = 0;
             long previousEchoes = 0;
             long previousErrors = 0;
+            long previousBytes = 0;
             while (System.nanoTime() < endNanos) {
                 long now = System.nanoTime();
                 if (now < nextSampleNanos) {
@@ -445,8 +511,9 @@ public final class BenchMain {
                 long received = counters.framesReceived.get();
                 long echoes = counters.ownEchoes.get();
                 long errors = counters.errorFrames.get();
+                long bytes = counters.bytesReceived.get();
                 long restMicros = counters.restLastMicros;
-                timelineRows.add(String.format(Locale.ROOT, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
+                timelineRows.add(String.format(Locale.ROOT, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
                         elapsedSeconds,
                         clients.size(),
                         sent - previousSent,
@@ -455,6 +522,8 @@ public final class BenchMain {
                         errors - previousErrors,
                         counters.closedConnections.get(),
                         counters.wsErrors.get(),
+                        bytes - previousBytes,
+                        counters.messageFrames.get(),
                         restMicros < 0 ? -1 : Math.round(restMicros / 1000.0),
                         usedHeapMb(),
                         readRssMb(backendPid)));
@@ -462,6 +531,7 @@ public final class BenchMain {
                 previousReceived = received;
                 previousEchoes = echoes;
                 previousErrors = errors;
+                previousBytes = bytes;
                 nextSampleNanos += TimeUnit.SECONDS.toNanos(1);
                 if (nextSampleNanos < now) {
                     nextSampleNanos = now + TimeUnit.SECONDS.toNanos(1);
@@ -476,7 +546,7 @@ public final class BenchMain {
                 probeThread.interrupt();
             }
             // 给最后一批回显一点落地时间
-            Thread.sleep(500);
+            Thread.sleep(config.settleMillis);
         }
 
         private void restProbeLoop() {
@@ -531,6 +601,9 @@ public final class BenchMain {
                     success, failed, successRate,
                     sent, counters.sendErrors.get(),
                     echoes, received, counters.errorFrames.get(),
+                    counters.messageFrames.get(), counters.userListFrames.get(),
+                    counters.pongFrames.get(), counters.otherFrames.get(),
+                    counters.bytesReceived.get(),
                     counters.closedConnections.get(), counters.wsErrors.get(),
                     msgPerSecond, framesPerSecond,
                     percentile(latencies, 0.50), percentile(latencies, 0.95),
@@ -553,6 +626,11 @@ public final class BenchMain {
                     "消息: 发送 %d（发送失败 %d），己方回显 %d，收到帧 %d（error 帧 %d），连接中断 %d，WS 错误 %d%n",
                     result.sent(), result.sendErrors(), result.echoes(), result.framesReceived(),
                     result.errorFrames(), result.closedConnections(), result.wsErrors());
+            System.out.printf(Locale.ROOT,
+                    "帧分类: message %d / userList %d / pong %d / error %d / 其他 %d，接收字节 %.1f MB%n",
+                    result.messageFrames(), result.userListFrames(), result.pongFrames(),
+                    result.errorFrames(), result.otherFrames(),
+                    result.bytesReceived() / (1024.0 * 1024.0));
             System.out.printf(Locale.ROOT,
                     "端到端延迟(ms): P50 %.2f / P95 %.2f / P99 %.2f / Max %.2f（样本 %d）%n",
                     result.p50Ms(), result.p95Ms(), result.p99Ms(), result.maxMs(), result.echoes());
@@ -582,7 +660,8 @@ public final class BenchMain {
             }
             List<String> lines = new ArrayList<>(timelineRows.size() + 1);
             lines.add("elapsed_s,connections,sent_delta,frames_delta,echo_delta,error_frames_delta,"
-                    + "closed_connections_total,ws_errors_total,rest_last_ms,client_heap_used_mb,backend_rss_mb");
+                    + "closed_connections_total,ws_errors_total,bytes_delta,message_frames_total,"
+                    + "rest_last_ms,client_heap_used_mb,backend_rss_mb");
             lines.addAll(timelineRows);
             Files.write(path, lines);
             System.out.println("[bench] 已写入时间线 CSV: " + path.toAbsolutePath());
@@ -711,7 +790,7 @@ public final class BenchMain {
 
         // ---------------------------------------------------------- 发送
 
-        private void sendLoop(long endNanos, double rate) {
+        private void sendLoop(long endNanos, double rate, boolean jitter) {
             WebSocket webSocket = waitForSocket(endNanos);
             if (webSocket == null) {
                 return;
@@ -722,6 +801,11 @@ public final class BenchMain {
             }
             long intervalNanos = Math.max(1L, (long) (1_000_000_000L / rate));
             long nextSendNanos = System.nanoTime();
+            if (jitter) {
+                // 随机相位：把首个发送时间打散到 [0, interval) 内，避免 N 个连接同一毫秒齐发
+                long offset = java.util.concurrent.ThreadLocalRandom.current().nextLong(intervalNanos);
+                nextSendNanos += offset - intervalNanos;
+            }
             long sequence = 0;
             while (System.nanoTime() < endNanos) {
                 nextSendNanos += intervalNanos;
@@ -774,7 +858,7 @@ public final class BenchMain {
         @Override
         public void onOpen(WebSocket webSocket) {
             this.socket = webSocket;
-            webSocket.request(1);
+            webSocket.request(RECEIVE_WINDOW);
         }
 
         @Override
@@ -804,13 +888,24 @@ public final class BenchMain {
 
         private void handleFrame(String text) {
             counters.framesReceived.incrementAndGet();
+            counters.bytesReceived.addAndGet(text.length());
             if (text.contains("\"type\":\"error\"")) {
                 counters.errorFrames.incrementAndGet();
                 return;
             }
-            if (!text.contains("\"type\":\"message\"")) {
+            if (text.contains("\"type\":\"userList\"")) {
+                counters.userListFrames.incrementAndGet();
                 return;
             }
+            if (text.contains("\"type\":\"pong\"")) {
+                counters.pongFrames.incrementAndGet();
+                return;
+            }
+            if (!text.contains("\"type\":\"message\"")) {
+                counters.otherFrames.incrementAndGet();
+                return;
+            }
+            counters.messageFrames.incrementAndGet();
             int senderMarker = text.indexOf("\"sender\":{\"id\":");
             if (senderMarker < 0) {
                 return;
@@ -843,6 +938,11 @@ public final class BenchMain {
                              long echoes,
                              long framesReceived,
                              long errorFrames,
+                             long messageFrames,
+                             long userListFrames,
+                             long pongFrames,
+                             long otherFrames,
+                             long bytesReceived,
                              long closedConnections,
                              long wsErrors,
                              double msgPerSecond,
