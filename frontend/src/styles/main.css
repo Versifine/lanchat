@@ -1,0 +1,111 @@
+/* =============================================================================
+   LanChat 全局样式与主题变量（docs/ui-design.md）
+   - 主色 #409EFF；强调渐变 linear-gradient(135deg,#667eea,#764ba2)
+   - 背景 #f5f7fb / 卡片白 / 文字 #303133 / 次要 #909399 / 分割线 #e4e7ed
+   - 圆角：卡片 12px、气泡 10px、输入框 8px；阴影 0 4px 16px rgba(0,0,0,.06)
+   - 暗色：html.dark + Element Plus 暗色变量，背景 #141414、卡片 #1d1e1f
+   ========================================================================== */
+
+:root {
+  --lanchat-primary: #409eff;
+  --lanchat-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --lanchat-bg: #f5f7fb;
+  --lanchat-card: #ffffff;
+  --lanchat-card-subtle: #fafbfe;
+  --lanchat-text: #303133;
+  --lanchat-text-secondary: #909399;
+  --lanchat-border: #e4e7ed;
+  --lanchat-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  --lanchat-radius-card: 12px;
+  --lanchat-radius-bubble: 10px;
+  --lanchat-radius-input: 8px;
+  --lanchat-sidebar-width: 260px;
+  --lanchat-header-height: 60px;
+  --lanchat-bubble-self: linear-gradient(135deg, #5b8def 0%, #409eff 100%);
+  --lanchat-bubble-self-text: #ffffff;
+  --lanchat-bubble-other-bg: #ffffff;
+  --lanchat-bubble-other-text: #303133;
+}
+
+html.dark {
+  --lanchat-bg: #141414;
+  --lanchat-card: #1d1e1f;
+  --lanchat-card-subtle: #242526;
+  --lanchat-text: #e5eaf3;
+  --lanchat-text-secondary: #a3a6ad;
+  --lanchat-border: #363637;
+  --lanchat-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  --lanchat-bubble-other-bg: #262727;
+  --lanchat-bubble-other-text: #e5eaf3;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--lanchat-bg);
+  color: var(--lanchat-text);
+  font-family: system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+a {
+  color: var(--lanchat-primary);
+  text-decoration: none;
+}
+
+/* 细滚动条，聊天列表更清爽 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(144, 147, 153, 0.4);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(144, 147, 153, 0.65);
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* 全局 Element Plus 细节微调 */
+.el-message {
+  max-width: min(560px, 92vw);
+}
+
+.el-button:focus-visible {
+  outline: 2px solid rgba(64, 158, 255, 0.45);
+  outline-offset: 1px;
+}
+
+html.dark .el-card,
+html.dark .el-dialog {
+  background: var(--lanchat-card);
+}
+
+/* 通用动画：消息淡入 */
+@keyframes lanchat-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

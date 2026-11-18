@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 生产形态一键启动：后端托管前端构建产物，访问 http://localhost:8080
+# 生产形态一键启动：后端托管前端构建产物，访问 http://localhost:8081
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 source "$ROOT/scripts/env.sh"

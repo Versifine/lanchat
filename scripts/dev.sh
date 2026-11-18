@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 开发模式：同时起后端 (:8080) 与前端 Vite dev server (:5173)
+# 开发模式：同时起后端 (:8081) 与前端 Vite dev server (:5173)
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 source "$ROOT/scripts/env.sh"
@@ -12,7 +12,7 @@ cleanup() {
 }
 trap cleanup INT TERM EXIT
 
-echo "[dev] 启动后端 Spring Boot (:8080)…"
+echo "[dev] 启动后端 Spring Boot (:8081)…"
 mvn -q -f backend/pom.xml spring-boot:run &
 BACK_PID=$!
 

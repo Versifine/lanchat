@@ -4,7 +4,7 @@
 
 ## 1. 通用约定
 
-- Base URL：开发态 `http://localhost:8080`（Vite 代理），生产态由后端同端口托管前端。
+- Base URL：开发态 `http://localhost:8081`（Vite 代理），生产态由后端同端口托管前端。
 - 编码：UTF-8，JSON，字段 camelCase。
 - 时间戳：epoch 毫秒（`long`）。
 - 认证：REST 请求带 `Authorization: Bearer <JWT>`；WebSocket 用查询参数 `?token=<JWT>`。
@@ -89,11 +89,14 @@
 返回文件流，`Content-Disposition: attachment; filename="..."`。需登录；文件不存在 `404 1007`。
 
 ### GET /api/files/{id}
-返回文件元数据（同上 `file` 对象）。
+返回文件元数据（直接返回 `file` 对象本身，不再包一层 `{"file":...}`；与 POST 响应中的 `file` 字段结构一致）。
+
+> 实现说明：`/api/files/{id}/download` 额外兼容 `?token=<JWT>` 查询参数（便于浏览器直接打开下载链接），
+> 前端仍按契约使用 `Authorization: Bearer` 获取 blob 下载。
 
 ## 6. WebSocket 契约
 
-- 地址：`ws://localhost:8080/ws/chat?token=<JWT>`
+- 地址：`ws://localhost:8081/ws/chat?token=<JWT>`
 - 握手校验 token 失败：HTTP 401（浏览器表现为连接失败）。
 - 双方消息均为 JSON 文本帧，最大 16KB。
 
@@ -118,7 +121,12 @@
 | file | file:{id,originalName,size,sha256,downloadUrl}, sender:{...}, receiverId | 有人给你发了文件 |
 | system | message | 系统公告/服务端关闭 |
 | pong | timestamp | 心跳应答 |
-| error | code, message | 业务错误（如 1009 限流） |
+| error | code, message | 业务错误（如 1009 限流、1008 消息超长） |
+
+> 实现说明：
+> 1. 私聊消息同时推送给**发送者与接收者**（发送者据此拿到服务端 id 与顺序，前端不做乐观发送）。
+> 2. 消息超长（1008）与高频限流（1009）只返回 `error` 帧，**不主动断开**连接。
+> 3. 同一账号重复登录时，旧连接收到 `system` 帧后以 close 1001 关闭。
 
 ```json
 {"type":"message","id":11,

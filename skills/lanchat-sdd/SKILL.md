@@ -17,7 +17,7 @@ mvn -f backend/pom.xml test           # 后端单测 + 集成测试
 mvn -f backend/pom.xml package        # 打可执行 jar（含 Swagger UI 等）
 npm --prefix frontend install         # 安装前端依赖
 npm --prefix frontend run build       # 前端构建（产物 frontend/dist）
-npm --prefix frontend run dev         # 前端开发服务器（:5173，代理 /api /ws 到 :8080）
+npm --prefix frontend run dev         # 前端开发服务器（:5173，代理 /api /ws 到 :8081）
 scripts/dev.sh                        # 一条命令同时起后端 + 前端（开发）
 scripts/build.sh                      # 前端构建 + 拷 dist 到后端 static + 后端打包
 scripts/run.sh                        # 生产形态一键启动（后端托管前端）

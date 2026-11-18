@@ -20,12 +20,12 @@
 环境要求：JDK 21、Maven 3.9+、Node 20+（本机已把 JDK/Maven 装在 `~/.local/opt`，`scripts/env.sh` 会自动注入）。
 
 ```bash
-# 开发模式：后端 :8080 + 前端 Vite :5173（自动代理 /api /ws）
+# 开发模式：后端 :8081 + 前端 Vite :5173（自动代理 /api /ws）
 scripts/dev.sh
 
 # 生产形态（老师验收推荐）：一条命令构建前端并打包后端，启动单服务
 scripts/build.sh
-scripts/run.sh          # 打开 http://localhost:8080
+scripts/run.sh          # 打开 http://localhost:8081
 ```
 
 也可以分别启动：
@@ -36,7 +36,7 @@ mvn -f backend/pom.xml spring-boot:run        # 后端
 npm --prefix frontend install && npm --prefix frontend run dev   # 前端
 ```
 
-默认端口 8080，SQLite 数据在 `data/lanchat.db`，上传文件在 `data/uploads/`。
+默认端口 8081（8080 已被本机其他服务占用），SQLite 数据在 `data/lanchat.db`，上传文件在 `data/uploads/`。
 
 ## 测试与压测
 
