@@ -76,3 +76,15 @@
 - **backend-dev 修复**（只改 main 代码）：BUG-1 改为 `{1,12}` 上界并复用同一扩展名规则；BUG-2 新增 `DataAccessException` 兜底识别（errorCode=19 / SQLState 23xxx / UNIQUE 关键字）→ `BusinessException(1002)`。
 - **验证**：隔离实例 21/21（落盘 UUID+.pdf/.gz/.sh、超长扩展名丢弃、路径穿越仍被清洗；20 线程并发注册 1×200 + 19×409 + 0×500）；`mvn test` 157/158，唯一失败是 QA 按旧行为写的断言（已交 QA 更新为 1002），属预期。
 - **过程价值**：这是课程要求的"测试发现问题 → 修复 → 回归"的真实闭环，报告"系统验证"与"AI 工程化实践"章节引用。
+
+## 2026-11-18 11:45–11:55 验收、生产构建与最终联调
+
+- **qa-dev 完成**（task-3 completed）：20 个测试类 / 160 用例全绿；压测工具与数据交付（`tools/bench/`、`assets/bench/` + README）；发现 BUG-1/BUG-2 并回归。
+- **Lead 验收与部署**：
+  - 停旧进程、清理被压测污染的 4533 用户库；
+  - `scripts/build.sh` 生产构建：前端构建 → dist 拷入后端 static → 单 jar（前端由后端托管）；
+  - 生产形态单服务启动验证：`/` 200、`/swagger-ui/index.html` 200、REST 未认证 401、干净库首启建表；
+  - 浏览器 E2E（本机 chrome-headless-shell + CDP，无 mock，直连 :8081 单服务）：11/11 通过、console error 0；截图 7 张 2880×1800 存 `assets/screenshots/final-*.png`（登录/注册/群聊/私聊/文件传输/暗色/Swagger）。
+- **关键验收数据**（详见 `assets/bench/README.md`）：500 连接×1 msg/s → P50 10.10 / P95 21.40 / P99 31.23 ms、100% 投递、0 错误；吞吐 1066.75 msg/s（该点延迟不达标，如实记录）；轮询 vs WS：P95 3006 ms vs 327 ms；20 MB 上传平均 160.21 MB/s；`-Xmx512m` 下 heap ≈171–218 MB 不 OOM。
+- **已识别的设计瓶颈（报告如实分析 + 未来工作）**：全量 userList 广播 O(N²) 建连风暴、广播 O(N) 扇出 + 同机压测客户端饱和；SQLite WAL 在 1067 msg/s 下无锁错误。
+- **下一步**：report-writer 生成约 1 万字报告 + 压测图表并排版 docx；Lead 审核后清库、打包、发布 GitHub（需用户审批）。
