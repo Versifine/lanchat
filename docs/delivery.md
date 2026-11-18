@@ -13,7 +13,7 @@
 | 测试与压测数据 | `backend/src/test/`、`tools/bench/`、`assets/bench/` | 进行中 |
 | 界面截图 | `assets/screenshots/` | 已有，最终重拍 |
 | 打包压缩包 | `【（学号）_（姓名）】.zip` | 待打包 |
-| GitHub 仓库 | `https://github.com/Versifine/lanchat`（待用户确认后创建） | 待审批 |
+| GitHub 仓库 | `https://github.com/Versifine/lanchat` | ✅ 已发布（2026-11-18，用户批准） |
 
 ## 2. 提交前检查清单
 
@@ -43,7 +43,7 @@ cp "【（学号）_（姓名）】.zip" /home/versi/Projects/Java/
 
 ## 4. GitHub 发布（高风险动作，需用户明确同意）
 
-1. 用户确认仓库名与可见性（默认 `Versifine/lanchat`，public）；
+1. ~~用户确认仓库名与可见性~~ 已完成：`Versifine/lanchat`，public（2026-11-18 用户批准）；
 2. `gh repo create Versifine/lanchat --public --source=. --remote=origin --push`；
 3. 打 tag `v1.0.0` 并创建 Release（附运行说明）；
 4. 把仓库地址写进报告第 2 章"开发环境"。
