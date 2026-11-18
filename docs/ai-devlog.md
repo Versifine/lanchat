@@ -39,6 +39,20 @@
 - 产出 `docs/SPEC.md`（v1.0）、`docs/api.md`（契约 v1）、`docs/eval-plan.md`（评测集）、`docs/ui-design.md`、`skills/lanchat-sdd/SKILL.md`。
 - 下一步：Lead 分配共享任务，后端/前端 agent 并行实现，测试 agent 编写评测集与压测工具。
 
+### 11:00–11:20 后端 / 前端实现完成与联调（AI 产出，Lead 验收）
+
+- **backend-dev**（task-1，已 complete）：完成 72 个 Java 文件（约 3700 行），严格按整洁架构分层：
+  - domain 零 Spring/JDBC 依赖；application 纯 Java 用例服务；adapter/in 为 REST Controller + WS Handler + JWT 过滤器 + 全局异常；adapter/out 为 JdbcTemplate 仓储 + 本地文件存储 + WS 通知；infrastructure 为 JWT/PBKDF2/限流/心跳/会话表/环境配置。
+  - 自测证据：REST 49/49、WebSocket 45/45（含离线补发不重复、重复登录踢下线、伪造 sender 忽略、超长 1008、限流 1009、21MB→413）、优雅关闭与重启持久化通过；`mvn package` BUILD SUCCESS（jar 40.9MB）。
+- **frontend-dev**（task-2，已 complete）：完成 18 个源文件（约 3300 行），纯 JS 无新增依赖：
+  - 登录/注册页、三栏聊天主界面、在线列表与未读红点、气泡消息、文件上传进度与文件卡片、WS 指数退避重连与心跳、暗色模式、XSS 纯文本渲染。
+  - 自测证据：`npm run build` 成功；真实后端契约联调 17/17；真实浏览器 E2E 11/11（无 mock）；mock 全场景 23/23；修复登录按钮双提交 bug；20 张截图存入 `assets/screenshots/`。
+- **Lead 独立验收**：启动干净实例（仓库根启动、全新 data/lanchat.db），运行 `/tmp/verify_lanchat.mjs`：注册/登录/错误码/userList/群聊/私聊/心跳/历史/文件上传+WS 通知+SHA-256 下载一致/超长消息/SQL 注入 —— **22/22 通过**。
+- **端口冲突决策**（Lead）：8080 被本机 WeKnora-lite 占用且不可动，LanChat 统一改用 8081；已同步 application.yml、docs/api.md、README、scripts、skills、vite 代理。
+- **启动目录规范**：统一从仓库根启动（`scripts/dev.sh` / `scripts/run.sh`），运行时数据固定落在仓库根 `data/`（gitignored）；避免切换 cwd 造成"换库丢数据"错觉。
+- **契约补充**（docs/api.md 实现说明）：GET /api/files/{id} 直接返回 file 对象；私聊消息同时推送给发送者与接收者；超长/限流只回 error 帧不断连；下载兼容 ?token=。
+- **Git 提交**：`60b213f feat: 完成 LanChat 前后端实现...（120 files, +9173）`。
+
 ## 人工审批记录
 
 | 日期 | 动作 | 审批人 | 结果 |
