@@ -4,7 +4,7 @@
       <div v-if="uploading" class="upload-panel">
         <div class="upload-head">
           <div class="upload-file">
-            <el-icon><Document /></el-icon>
+            <el-icon :size="13"><Document /></el-icon>
             <span class="upload-name" :title="uploadName">{{ uploadName }}</span>
             <span class="upload-size">{{ formatSize(uploadSize) }}</span>
           </div>
@@ -12,33 +12,28 @@
         </div>
         <el-progress
           :percentage="uploadPercent"
-          :stroke-width="6"
+          :stroke-width="2"
           :show-text="false"
-          :status="uploadPercent >= 100 ? 'success' : ''"
         />
       </div>
     </transition>
 
     <div class="input-toolbar">
       <el-tooltip content="发送文件（最大 20MB）" placement="top">
-        <el-button
+        <button
+          type="button"
           class="tool-button"
-          text
-          circle
           :disabled="uploading"
           aria-label="选择文件"
           @click="pickFile"
         >
-          <el-icon :size="19"><Paperclip /></el-icon>
-        </el-button>
+          <el-icon :size="15"><Paperclip /></el-icon>
+        </button>
       </el-tooltip>
-      <span class="input-target">
-        <el-icon :size="13"><ChatLineRound /></el-icon>
-        发送至 {{ targetLabel }}
-      </span>
-      <span class="input-tip">Enter 发送 · Shift + Enter 换行</span>
+      <span class="input-target">TO · {{ targetLabel }}</span>
+      <span class="input-tip">ENTER 发送 · SHIFT + ENTER 换行</span>
       <span class="input-count" :class="{ warn: draft.length > MAX_MESSAGE_LENGTH - 100 }">
-        {{ draft.length }}/{{ MAX_MESSAGE_LENGTH }}
+        {{ draft.length }} / {{ MAX_MESSAGE_LENGTH }}
       </span>
     </div>
 
@@ -50,7 +45,7 @@
         :rows="2"
         resize="none"
         :maxlength="MAX_MESSAGE_LENGTH"
-        placeholder="输入消息，Enter 发送"
+        placeholder="输入消息…"
         class="message-textarea"
         @keydown.enter="handleEnterKey"
       />
@@ -58,10 +53,10 @@
         class="send-button"
         type="primary"
         :disabled="!draft.trim()"
+        aria-label="发送消息"
         @click="handleSend"
       >
-        <el-icon><Promotion /></el-icon>
-        <span>发送</span>
+        SEND
       </el-button>
     </div>
 
@@ -72,7 +67,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { ChatLineRound, Document, Paperclip, Promotion } from '@element-plus/icons-vue'
+import { Document, Paperclip } from '@element-plus/icons-vue'
 import { useChatStore, MAX_MESSAGE_LENGTH } from '../stores/chat'
 import { formatSize } from '../utils/format'
 
@@ -149,17 +144,17 @@ async function handleFilePicked(event) {
 <style scoped>
 .message-input {
   flex: 0 0 auto;
-  padding: 10px 18px 14px;
-  border-top: 1px solid var(--lanchat-border);
-  background: var(--lanchat-card);
+  padding: 12px 20px 16px;
+  border-top: 1px solid var(--line);
+  background: var(--surface);
 }
 
 .upload-panel {
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   padding: 8px 12px;
-  border: 1px solid var(--lanchat-border);
-  border-radius: var(--lanchat-radius-input);
-  background: var(--lanchat-card-subtle);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xs);
+  background: var(--surface-muted);
 }
 
 .upload-head {
@@ -167,16 +162,16 @@ async function handleFilePicked(event) {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  margin-bottom: 6px;
+  margin-bottom: 7px;
 }
 
 .upload-file {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   min-width: 0;
-  color: var(--lanchat-text);
-  font-size: 13px;
+  color: var(--ink);
+  font-size: 12px;
 }
 
 .upload-name {
@@ -187,59 +182,73 @@ async function handleFilePicked(event) {
 }
 
 .upload-size {
-  color: var(--lanchat-text-secondary);
-  font-size: 12px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.04em;
 }
 
 .upload-percent {
   flex: 0 0 auto;
-  color: var(--lanchat-primary);
-  font-size: 12px;
-  font-weight: 600;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
 }
 
 .input-toolbar {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 4px;
+  gap: 14px;
+  margin-bottom: 7px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 .tool-button {
-  color: var(--lanchat-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xs);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
 }
 
-.tool-button:hover {
-  color: var(--lanchat-primary);
+.tool-button:hover:not(:disabled) {
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+
+.tool-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .input-target {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: rgba(64, 158, 255, 0.1);
-  color: var(--lanchat-primary);
-  font-size: 12px;
   white-space: nowrap;
 }
 
 .input-tip {
   margin-left: auto;
-  color: var(--lanchat-text-secondary);
-  font-size: 12px;
+  color: var(--faint);
   white-space: nowrap;
 }
 
 .input-count {
-  color: var(--lanchat-text-secondary);
-  font-size: 12px;
+  color: var(--faint);
   white-space: nowrap;
 }
 
 .input-count.warn {
-  color: #e6a23c;
+  color: var(--accent);
 }
 
 .input-row {
@@ -253,25 +262,47 @@ async function handleFilePicked(event) {
 }
 
 .message-textarea :deep(.el-textarea__inner) {
-  border-radius: var(--lanchat-radius-input);
+  min-height: 58px !important;
   padding: 9px 12px;
-  font-family: inherit;
-  font-size: 14px;
+  border-radius: var(--radius-xs);
+  font-family: var(--font-sans);
+  font-size: 13.5px;
   line-height: 1.6;
-  box-shadow: 0 0 0 1px var(--lanchat-border) inset;
+  box-shadow: 0 0 0 1px var(--line) inset;
+}
+
+.message-textarea :deep(.el-textarea__inner:focus) {
+  box-shadow: 0 0 0 1px var(--ink) inset;
+}
+
+.message-textarea :deep(.el-input__count) {
+  background: transparent;
+  color: var(--faint);
+  font-family: var(--font-mono);
+  font-size: 9px;
 }
 
 .send-button {
   flex: 0 0 auto;
-  height: 40px;
+  height: 38px;
   padding: 0 18px;
-  border-radius: var(--lanchat-radius-input);
-  background: var(--lanchat-gradient);
-  border: none;
+  border-radius: var(--radius-xs);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  /* 禁用态：细线描边 + 弱化文字（有内容时切换为墨底纸字） */
+  --el-button-disabled-bg-color: transparent;
+  --el-button-disabled-border-color: var(--line-strong);
+  --el-button-disabled-text-color: var(--faint);
 }
 
-.send-button:hover:not(.is-disabled) {
-  opacity: 0.92;
+.send-button:not(.is-disabled) {
+  --el-button-bg-color: var(--ink);
+  --el-button-border-color: var(--ink);
+  --el-button-text-color: var(--paper);
+  --el-button-hover-bg-color: var(--ink-soft);
+  --el-button-hover-border-color: var(--ink-soft);
+  --el-button-hover-text-color: var(--paper);
 }
 
 .hidden-file-input {
@@ -280,16 +311,18 @@ async function handleFilePicked(event) {
 
 @media (max-width: 640px) {
   .message-input {
-    padding: 8px 10px 10px;
+    padding: 10px 12px 12px;
   }
   .input-tip {
     display: none;
   }
-  .input-target {
-    font-size: 11px;
+  .input-toolbar {
+    gap: 10px;
+    font-size: 8.5px;
   }
   .send-button {
-    padding: 0 12px;
+    height: 36px;
+    padding: 0 14px;
   }
 }
 </style>

@@ -1,45 +1,33 @@
 <template>
   <div class="file-message" :class="{ self }">
-    <div class="file-icon" :style="{ background: iconMeta.background, color: iconMeta.color }">
-      <el-icon :size="22"><component :is="iconMeta.icon" /></el-icon>
+    <div class="file-icon">
+      <span class="file-ext">{{ extension }}</span>
     </div>
     <div class="file-info">
       <div class="file-name" :title="file.originalName">{{ file.originalName }}</div>
-      <div class="file-size">
-        {{ formatSize(file.size) }}
+      <div class="file-meta">
+        <span class="file-size">{{ formatSize(file.size) }}</span>
         <el-tooltip v-if="file.sha256" :content="`SHA-256: ${file.sha256}`" placement="top">
-          <span class="file-checksum">SHA-256 校验</span>
+          <span class="file-checksum">SHA-256</span>
         </el-tooltip>
       </div>
     </div>
-    <el-tooltip content="下载文件" placement="top">
-      <el-button
-        class="file-download"
-        text
-        circle
-        :loading="downloading"
-        :disabled="downloading"
-        @click="handleDownload"
-      >
-        <el-icon v-if="!downloading" :size="18"><Download /></el-icon>
-      </el-button>
-    </el-tooltip>
+    <button
+      type="button"
+      class="file-download"
+      :disabled="downloading"
+      :aria-label="`下载 ${file.originalName}`"
+      @click="handleDownload"
+    >
+      {{ downloading ? '···' : 'DOWNLOAD' }}
+    </button>
   </div>
 </template>
 
 <script setup>
 import { computed, ref } from 'vue'
-import {
-  Document,
-  Download,
-  Files,
-  Folder,
-  Headset,
-  Picture,
-  VideoCamera
-} from '@element-plus/icons-vue'
 import { useChatStore } from '../stores/chat'
-import { fileKind, formatSize } from '../utils/format'
+import { fileExtension, formatSize } from '../utils/format'
 
 const props = defineProps({
   file: { type: Object, required: true },
@@ -49,16 +37,10 @@ const props = defineProps({
 const chat = useChatStore()
 const downloading = ref(false)
 
-const ICON_META = {
-  image: { icon: Picture, background: 'rgba(103, 194, 58, 0.14)', color: '#529b2e' },
-  video: { icon: VideoCamera, background: 'rgba(230, 162, 60, 0.16)', color: '#b88230' },
-  audio: { icon: Headset, background: 'rgba(142, 68, 173, 0.14)', color: '#8e44ad' },
-  archive: { icon: Folder, background: 'rgba(230, 162, 60, 0.16)', color: '#b88230' },
-  doc: { icon: Document, background: 'rgba(64, 158, 255, 0.14)', color: '#337ecc' },
-  other: { icon: Files, background: 'rgba(144, 147, 153, 0.16)', color: '#73767a' }
-}
-
-const iconMeta = computed(() => ICON_META[fileKind(props.file.originalName)] || ICON_META.other)
+const extension = computed(() => {
+  const ext = fileExtension(props.file.originalName)
+  return (ext || 'file').slice(0, 4).toUpperCase()
+})
 
 async function handleDownload() {
   if (downloading.value) return
@@ -77,28 +59,41 @@ async function handleDownload() {
 .file-message {
   display: flex;
   align-items: center;
-  gap: 10px;
-  min-width: 220px;
-  max-width: min(360px, 100%);
-  padding: 10px 12px;
-  border: 1px solid var(--lanchat-border);
-  border-radius: var(--lanchat-radius-card);
-  background: var(--lanchat-card-subtle);
-  transition: box-shadow 0.18s ease, transform 0.18s ease;
+  gap: 11px;
+  min-width: 240px;
+  max-width: min(380px, 100%);
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  transition: border-color 0.16s ease;
 }
 
 .file-message:hover {
-  box-shadow: var(--lanchat-shadow);
+  border-color: var(--line-strong);
+}
+
+.file-message.self {
+  border-color: var(--line-strong);
 }
 
 .file-icon {
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  flex: 0 0 auto;
-  width: 42px;
-  height: 42px;
-  border-radius: 10px;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-xs);
+  color: var(--ink);
+  background: transparent;
+}
+
+.file-ext {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.06em;
 }
 
 .file-info {
@@ -108,34 +103,52 @@ async function handleDownload() {
 
 .file-name {
   overflow: hidden;
-  color: var(--lanchat-text);
-  font-size: 13px;
+  color: var(--ink);
+  font-size: 12.5px;
   font-weight: 500;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.file-size {
+.file-meta {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   margin-top: 3px;
-  color: var(--lanchat-text-secondary);
-  font-size: 12px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
 }
 
 .file-checksum {
-  padding: 0 5px;
-  border-radius: 6px;
-  background: rgba(103, 194, 58, 0.12);
-  color: #529b2e;
-  font-size: 11px;
+  color: var(--online);
   cursor: help;
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
 }
 
 .file-download {
   flex: 0 0 auto;
-  color: var(--lanchat-primary);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.file-download:hover:not(:disabled) {
+  color: var(--ink);
+}
+
+.file-download:disabled {
+  color: var(--faint);
+  cursor: wait;
 }
 
 @media (max-width: 480px) {

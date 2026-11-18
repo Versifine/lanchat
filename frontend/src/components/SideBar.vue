@@ -3,7 +3,7 @@
     <div class="sidebar-search">
       <el-input
         v-model="keyword"
-        placeholder="搜索用户"
+        placeholder="搜索用户 / SEARCH"
         clearable
         :prefix-icon="Search"
         size="default"
@@ -18,11 +18,11 @@
         @click="handleOpenGroup"
       >
         <span class="group-avatar">
-          <el-icon :size="20"><UserFilled /></el-icon>
+          <el-icon :size="14"><UserFilled /></el-icon>
         </span>
         <span class="conversation-info">
           <span class="conversation-name">群聊</span>
-          <span class="conversation-desc">所有在线成员</span>
+          <span class="conversation-desc">ALL MEMBERS</span>
         </span>
         <span v-if="groupUnread" class="unread-badge">{{ formatBadge(groupUnread) }}</span>
       </button>
@@ -30,8 +30,8 @@
 
     <div class="sidebar-section sidebar-users">
       <div class="section-title">
-        <span>用户列表</span>
-        <span class="section-count">{{ filteredUsers.length }}</span>
+        <span class="section-label">MEMBERS</span>
+        <span class="section-count">{{ String(filteredUsers.length).padStart(2, '0') }}</span>
       </div>
       <div class="user-scroll">
         <button
@@ -42,11 +42,11 @@
           :class="{ active: isActiveUser(user), offline: !user.online }"
           @click="handleOpenPrivate(user)"
         >
-          <UserAvatar :user="user" :size="38" show-dot :online="user.online" />
+          <UserAvatar :user="user" :size="28" show-dot :online="user.online" />
           <span class="conversation-info">
             <span class="conversation-name">{{ user.nickname || user.username }}</span>
             <span class="conversation-desc">
-              {{ user.online ? '在线' : '离线' }}
+              {{ user.online ? 'ONLINE' : 'OFFLINE' }}
             </span>
           </span>
           <span v-if="userUnread(user.id)" class="unread-badge">
@@ -55,15 +55,15 @@
         </button>
 
         <div v-if="!filteredUsers.length" class="user-empty">
-          <el-icon :size="26"><ChatDotRound /></el-icon>
-          <p>{{ keyword ? '没有匹配的用户' : '暂无其他用户，快去邀请同事吧' }}</p>
+          <el-icon :size="20"><ChatDotRound /></el-icon>
+          <p>{{ keyword ? '没有匹配的用户' : '暂无其他用户' }}</p>
         </div>
       </div>
     </div>
 
     <div class="sidebar-footer">
       <span class="footer-dot"></span>
-      共 {{ chat.users.length }} 位用户 · {{ chat.onlineCount }} 人在线
+      <span>{{ String(chat.users.length).padStart(2, '0') }} USERS · {{ String(chat.onlineCount).padStart(2, '0') }} ONLINE</span>
     </div>
   </aside>
 </template>
@@ -119,19 +119,27 @@ async function handleOpenPrivate(user) {
 <style scoped>
 .sidebar {
   display: flex;
+  flex: 0 0 var(--sidebar-width);
   flex-direction: column;
-  flex: 0 0 var(--lanchat-sidebar-width);
-  width: var(--lanchat-sidebar-width);
+  width: var(--sidebar-width);
   min-height: 0;
-  padding: 14px 12px 10px;
-  background: var(--lanchat-card);
-  border-right: 1px solid var(--lanchat-border);
+  padding: 16px 14px 10px;
+  background: var(--paper);
+  border-right: 1px solid var(--line);
   z-index: 15;
 }
 
 .sidebar-search {
   flex: 0 0 auto;
-  margin-bottom: 12px;
+  margin-bottom: 18px;
+}
+
+.sidebar-search :deep(.el-input__wrapper) {
+  background-color: var(--surface);
+}
+
+.sidebar-search :deep(.el-input__inner) {
+  font-size: 12.5px;
 }
 
 .sidebar-section {
@@ -140,33 +148,32 @@ async function handleOpenPrivate(user) {
 
 .sidebar-users {
   display: flex;
-  flex-direction: column;
   flex: 1 1 auto;
+  flex-direction: column;
   min-height: 0;
-  margin-top: 6px;
+  margin-top: 2px;
 }
 
 .section-title {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 6px 8px;
-  color: var(--lanchat-text-secondary);
-  font-size: 12px;
-  letter-spacing: 0.4px;
+  padding: 0 8px 8px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 
 .section-count {
-  padding: 0 6px;
-  border-radius: 8px;
-  background: rgba(144, 147, 153, 0.14);
+  color: var(--faint);
 }
 
 .user-scroll {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
-  padding-right: 2px;
 }
 
 .conversation-item {
@@ -175,54 +182,69 @@ async function handleOpenPrivate(user) {
   align-items: center;
   gap: 10px;
   width: 100%;
-  padding: 9px 10px;
-  margin-bottom: 4px;
+  margin-bottom: 1px;
+  padding: 7px 8px;
   border: 1px solid transparent;
-  border-radius: var(--lanchat-radius-input);
+  border-radius: var(--radius-xs);
   background: transparent;
-  color: var(--lanchat-text);
+  color: var(--ink);
   font: inherit;
   text-align: left;
   cursor: pointer;
-  transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+  transition: background-color 0.14s ease, border-color 0.14s ease;
+}
+
+.conversation-item::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  bottom: -1px;
+  left: -1px;
+  width: 2px;
+  background: transparent;
 }
 
 .conversation-item:hover {
-  background: var(--lanchat-card-subtle);
+  background: var(--hover);
 }
 
 .conversation-item.active {
-  background: rgba(64, 158, 255, 0.1);
-  border-color: rgba(64, 158, 255, 0.35);
+  border-color: var(--line);
+  background: var(--surface);
+}
+
+.conversation-item.active::before {
+  background: var(--ink);
 }
 
 .group-item {
-  margin-bottom: 2px;
+  padding: 8px;
 }
 
 .group-avatar {
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  flex: 0 0 auto;
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: var(--lanchat-gradient);
-  color: #fff;
-  box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3);
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-xs);
+  background: var(--surface);
+  color: var(--ink);
 }
 
 .conversation-info {
   display: flex;
-  flex-direction: column;
   flex: 1 1 auto;
+  flex-direction: column;
+  gap: 1px;
   min-width: 0;
 }
 
 .conversation-name {
   overflow: hidden;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -230,42 +252,44 @@ async function handleOpenPrivate(user) {
 
 .conversation-desc {
   overflow: hidden;
-  color: var(--lanchat-text-secondary);
-  font-size: 12px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.14em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .user-item.offline {
-  opacity: 0.62;
+  opacity: 0.55;
 }
 
 .user-item.offline .conversation-name {
-  color: var(--lanchat-text-secondary);
+  color: var(--muted);
 }
 
 .unread-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   flex: 0 0 auto;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  border-radius: 9px;
-  background: #f56c6c;
-  color: #fff;
-  font-size: 11px;
-  font-weight: 600;
+  min-width: 14px;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 10px;
   line-height: 1;
-  box-shadow: 0 1px 4px rgba(245, 108, 108, 0.45);
+  text-align: right;
+  letter-spacing: 0;
 }
 
 .user-empty {
-  padding: 28px 8px;
-  color: var(--lanchat-text-secondary);
-  font-size: 13px;
+  padding: 30px 10px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
   text-align: center;
+}
+
+.user-empty .el-icon {
+  color: var(--faint);
 }
 
 .user-empty p {
@@ -274,21 +298,24 @@ async function handleOpenPrivate(user) {
 
 .sidebar-footer {
   display: flex;
-  align-items: center;
-  gap: 6px;
   flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
   margin-top: 8px;
   padding-top: 10px;
-  border-top: 1px solid var(--lanchat-border);
-  color: var(--lanchat-text-secondary);
-  font-size: 12px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
 }
 
 .footer-dot {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
-  background: #67c23a;
+  background: var(--online);
 }
 
 @media (max-width: 820px) {
@@ -297,9 +324,9 @@ async function handleOpenPrivate(user) {
     top: 0;
     bottom: 0;
     left: 0;
-    transform: translateX(-102%);
-    transition: transform 0.25s ease;
-    box-shadow: 8px 0 24px rgba(0, 0, 0, 0.18);
+    transform: translateX(-101%);
+    transition: transform 0.22s ease;
+    box-shadow: 12px 0 32px rgba(18, 17, 15, 0.14);
   }
   .sidebar.is-open {
     transform: translateX(0);

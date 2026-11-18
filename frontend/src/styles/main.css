@@ -1,44 +1,244 @@
 /* =============================================================================
-   LanChat 全局样式与主题变量（docs/ui-design.md）
-   - 主色 #409EFF；强调渐变 linear-gradient(135deg,#667eea,#764ba2)
-   - 背景 #f5f7fb / 卡片白 / 文字 #303133 / 次要 #909399 / 分割线 #e4e7ed
-   - 圆角：卡片 12px、气泡 10px、输入框 8px；阴影 0 4px 16px rgba(0,0,0,.06)
-   - 暗色：html.dark + Element Plus 暗色变量，背景 #141414、卡片 #1d1e1f
+   LanChat — 视觉基调：温暖纸张 / 编辑排版（editorial indie）
+   纸色底 + 墨色文字 + 1px 细线 + 单一暖橙强调色
+   衬线标题 / 正文无衬线 / 元信息等宽；无渐变、阴影极弱、圆角 2–6px
    ========================================================================== */
 
+/* ---------------------------------------------------------------------------
+   设计令牌（浅色）
+   ------------------------------------------------------------------------- */
 :root {
-  --lanchat-primary: #409eff;
-  --lanchat-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --lanchat-bg: #f5f7fb;
-  --lanchat-card: #ffffff;
-  --lanchat-card-subtle: #fafbfe;
-  --lanchat-text: #303133;
-  --lanchat-text-secondary: #909399;
-  --lanchat-border: #e4e7ed;
-  --lanchat-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-  --lanchat-radius-card: 12px;
-  --lanchat-radius-bubble: 10px;
-  --lanchat-radius-input: 8px;
-  --lanchat-sidebar-width: 260px;
-  --lanchat-header-height: 60px;
-  --lanchat-bubble-self: linear-gradient(135deg, #5b8def 0%, #409eff 100%);
-  --lanchat-bubble-self-text: #ffffff;
-  --lanchat-bubble-other-bg: #ffffff;
-  --lanchat-bubble-other-text: #303133;
+  /* 纸与墨 */
+  --paper: #f6f4ef;
+  --surface: #ffffff;
+  --surface-muted: #f1eee7;
+  --ink: #1a1a17;
+  --ink-soft: #3c3a34;
+  --muted: #6f6b60;
+  --faint: #9a9488;
+  --line: #ded9cf;
+  --line-strong: #c8c2b5;
+  --accent: #b4532a;
+  --accent-soft: rgba(180, 83, 42, 0.1);
+  --online: #2f7d4f;
+  --online-soft: rgba(47, 125, 79, 0.12);
+  --danger: #a13d2d;
+  --hover: rgba(26, 26, 23, 0.035);
+  --overlay: rgba(18, 17, 15, 0.32);
+
+  /* 字体 */
+  --font-serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia,
+    'Noto Serif CJK SC', 'Songti SC', SimSun, serif;
+  --font-sans: system-ui, -apple-system, 'Segoe UI', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  --font-mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas,
+    'Liberation Mono', 'Courier New', monospace;
+
+  /* 形状与布局 */
+  --radius-xs: 2px;
+  --radius-sm: 3px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+  --sidebar-width: 264px;
+  --header-height: 56px;
+
+  /* 兼容旧变量名（主题内部别名） */
+  --lanchat-primary: var(--ink);
+  --lanchat-bg: var(--paper);
+  --lanchat-card: var(--surface);
+  --lanchat-card-subtle: var(--surface-muted);
+  --lanchat-text: var(--ink);
+  --lanchat-text-secondary: var(--muted);
+  --lanchat-border: var(--line);
+  --lanchat-sidebar-width: var(--sidebar-width);
+  --lanchat-header-height: var(--header-height);
+  --lanchat-radius-card: var(--radius-md);
+  --lanchat-radius-bubble: var(--radius-md);
+  --lanchat-radius-input: var(--radius-xs);
+  --lanchat-bubble-self: var(--ink);
+  --lanchat-bubble-self-text: var(--paper);
+  --lanchat-bubble-other-bg: var(--surface);
+  --lanchat-bubble-other-text: var(--ink);
+  --lanchat-shadow: none;
+
+  /* Element Plus：主色改为墨色，控件统一细线风格 */
+  --el-color-primary: #1a1a17;
+  --el-color-primary-light-3: #5e5c57;
+  --el-color-primary-light-5: #8d8a84;
+  --el-color-primary-light-7: #bcb8b0;
+  --el-color-primary-light-8: #d3cfc7;
+  --el-color-primary-light-9: #eae7e0;
+  --el-color-primary-dark-2: #000000;
+  --el-color-success: #2f7d4f;
+  --el-color-success-light-3: #6da484;
+  --el-color-success-light-5: #97bea7;
+  --el-color-success-light-7: #c1d8ca;
+  --el-color-success-light-8: #d6e6dc;
+  --el-color-success-light-9: #ebf4ef;
+  --el-color-success-dark-2: #256340;
+  --el-color-warning: #8a5a2b;
+  --el-color-warning-light-3: #ab845d;
+  --el-color-warning-light-5: #c5a989;
+  --el-color-warning-light-7: #dfcdb8;
+  --el-color-warning-light-8: #e9ddd0;
+  --el-color-warning-light-9: #f3ece4;
+  --el-color-warning-dark-2: #6e4822;
+  --el-color-danger: #a13d2d;
+  --el-color-danger-light-3: #bd6f62;
+  --el-color-danger-light-5: #d09b91;
+  --el-color-danger-light-7: #e3c5bf;
+  --el-color-danger-light-8: #ecd6d1;
+  --el-color-danger-light-9: #f5ebe8;
+  --el-color-danger-dark-2: #812f21;
+  --el-color-error: #a13d2d;
+  --el-color-error-light-3: #bd6f62;
+  --el-color-error-light-5: #d09b91;
+  --el-color-error-light-7: #e3c5bf;
+  --el-color-error-light-8: #ecd6d1;
+  --el-color-error-light-9: #f5ebe8;
+  --el-color-error-dark-2: #812f21;
+  --el-color-info: #6f6b60;
+  --el-color-info-light-3: #959186;
+  --el-color-info-light-5: #b2aea4;
+  --el-color-info-light-7: #cfccc5;
+  --el-color-info-light-8: #dedbd5;
+  --el-color-info-light-9: #ece9e4;
+  --el-color-info-dark-2: #59564c;
+
+  --el-text-color-primary: #1a1a17;
+  --el-text-color-regular: #3c3a34;
+  --el-text-color-secondary: #6f6b60;
+  --el-text-color-placeholder: #9a9488;
+  --el-text-color-disabled: #b6b0a5;
+
+  --el-border-color: #ded9cf;
+  --el-border-color-light: #e6e1d8;
+  --el-border-color-lighter: #ece8e0;
+  --el-border-color-extra-light: #f2efe9;
+  --el-border-color-dark: #c8c2b5;
+  --el-border-color-darker: #b3ac9d;
+
+  --el-fill-color: #f0ede6;
+  --el-fill-color-light: #f3f0ea;
+  --el-fill-color-lighter: #f7f5f0;
+  --el-fill-color-extra-light: #faf9f5;
+  --el-fill-color-dark: #e8e4db;
+  --el-fill-color-darker: #e0dbd1;
+  --el-fill-color-blank: #ffffff;
+
+  --el-bg-color: #f6f4ef;
+  --el-bg-color-page: #f6f4ef;
+  --el-bg-color-overlay: #ffffff;
+
+  --el-border-radius-base: 3px;
+  --el-border-radius-small: 2px;
+  --el-border-radius-round: 3px;
+
+  --el-font-family: var(--font-sans);
+  --el-font-size-base: 13.5px;
+  --el-box-shadow: 0 14px 40px rgba(26, 26, 23, 0.12);
+  --el-box-shadow-light: 0 6px 20px rgba(26, 26, 23, 0.08);
+  --el-box-shadow-lighter: 0 2px 10px rgba(26, 26, 23, 0.06);
+  --el-box-shadow-dark: 0 14px 40px rgba(26, 26, 23, 0.18);
 }
 
+/* ---------------------------------------------------------------------------
+   设计令牌（暗色）
+   ------------------------------------------------------------------------- */
 html.dark {
-  --lanchat-bg: #141414;
-  --lanchat-card: #1d1e1f;
-  --lanchat-card-subtle: #242526;
-  --lanchat-text: #e5eaf3;
-  --lanchat-text-secondary: #a3a6ad;
-  --lanchat-border: #363637;
-  --lanchat-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
-  --lanchat-bubble-other-bg: #262727;
-  --lanchat-bubble-other-text: #e5eaf3;
+  --paper: #12110f;
+  --surface: #191816;
+  --surface-muted: #1f1e1b;
+  --ink: #e9e5db;
+  --ink-soft: #cfcabe;
+  --muted: #9a958a;
+  --faint: #736e64;
+  --line: #2c2a25;
+  --line-strong: #3b3832;
+  --accent: #d97757;
+  --accent-soft: rgba(217, 119, 87, 0.14);
+  --online: #5aa877;
+  --online-soft: rgba(90, 168, 119, 0.16);
+  --danger: #d97757;
+  --hover: rgba(233, 229, 219, 0.055);
+  --overlay: rgba(0, 0, 0, 0.5);
+
+  --el-color-primary: #e9e5db;
+  --el-color-primary-light-3: #cfc9bd;
+  --el-color-primary-light-5: #a8a294;
+  --el-color-primary-light-7: #6e6a60;
+  --el-color-primary-light-8: #4a4740;
+  --el-color-primary-light-9: #2c2a25;
+  --el-color-primary-dark-2: #ffffff;
+  --el-color-success: #5aa877;
+  --el-color-success-light-3: #7fbd96;
+  --el-color-success-light-5: #a4d0b6;
+  --el-color-success-light-7: #c8e2d3;
+  --el-color-success-light-8: #dbeee3;
+  --el-color-success-light-9: #eef7f1;
+  --el-color-success-dark-2: #48875f;
+  --el-color-warning: #c9925a;
+  --el-color-warning-light-3: #d7ab7d;
+  --el-color-warning-light-5: #e3c4a1;
+  --el-color-warning-light-7: #efdcc5;
+  --el-color-warning-light-8: #f3e6d6;
+  --el-color-warning-light-9: #f8f0e7;
+  --el-color-warning-dark-2: #a47547;
+  --el-color-danger: #d97757;
+  --el-color-danger-light-3: #e3977f;
+  --el-color-danger-light-5: #ecb7a8;
+  --el-color-danger-light-7: #f2d1c7;
+  --el-color-danger-light-8: #f6dfd8;
+  --el-color-danger-light-9: #faeeea;
+  --el-color-danger-dark-2: #ae5f45;
+  --el-color-error: #d97757;
+  --el-color-error-light-3: #e3977f;
+  --el-color-error-light-5: #ecb7a8;
+  --el-color-error-light-7: #f2d1c7;
+  --el-color-error-light-8: #f6dfd8;
+  --el-color-error-light-9: #faeeea;
+  --el-color-error-dark-2: #ae5f45;
+  --el-color-info: #9a958a;
+  --el-color-info-light-3: #b5b1a8;
+  --el-color-info-light-5: #ccc9c2;
+  --el-color-info-light-7: #e0ddd8;
+  --el-color-info-light-8: #eae8e4;
+  --el-color-info-light-9: #f4f3f1;
+  --el-color-info-dark-2: #7b776e;
+
+  --el-text-color-primary: #e9e5db;
+  --el-text-color-regular: #cfcabe;
+  --el-text-color-secondary: #9a958a;
+  --el-text-color-placeholder: #736e64;
+  --el-text-color-disabled: #55514a;
+
+  --el-border-color: #2c2a25;
+  --el-border-color-light: #262420;
+  --el-border-color-lighter: #222120;
+  --el-border-color-extra-light: #1e1d1a;
+  --el-border-color-dark: #3b3832;
+  --el-border-color-darker: #4a463f;
+
+  --el-fill-color: #24221e;
+  --el-fill-color-light: #201f1c;
+  --el-fill-color-lighter: #1d1c19;
+  --el-fill-color-extra-light: #1a1917;
+  --el-fill-color-dark: #2c2a25;
+  --el-fill-color-darker: #34312b;
+  --el-fill-color-blank: #191816;
+
+  --el-bg-color: #12110f;
+  --el-bg-color-page: #12110f;
+  --el-bg-color-overlay: #191816;
+  --el-box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5);
+  --el-box-shadow-light: 0 6px 20px rgba(0, 0, 0, 0.4);
+  --el-box-shadow-lighter: 0 2px 10px rgba(0, 0, 0, 0.32);
+  --el-box-shadow-dark: 0 14px 40px rgba(0, 0, 0, 0.6);
 }
 
+/* ---------------------------------------------------------------------------
+   基础排版
+   ------------------------------------------------------------------------- */
 * {
   box-sizing: border-box;
 }
@@ -52,57 +252,326 @@ body,
 }
 
 body {
-  background: var(--lanchat-bg);
-  color: var(--lanchat-text);
-  font-family: system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif;
-  font-size: 14px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 13.5px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition: background-color 0.25s ease, color 0.25s ease;
+  text-rendering: optimizeLegibility;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--ink);
 }
 
 a {
-  color: var(--lanchat-primary);
-  text-decoration: none;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
 }
 
-/* 细滚动条，聊天列表更清爽 */
+/* 等宽小标签：元信息 / 分组标题 / 编号 */
+.mono-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1.5;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+
+/* 衬线标题 */
+.serif-heading {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+/* 细滚动条 */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(144, 147, 153, 0.4);
-  border-radius: 4px;
+  background: var(--line-strong);
+  border-radius: 0;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(144, 147, 153, 0.65);
+  background: var(--muted);
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 
-/* 全局 Element Plus 细节微调 */
+/* 焦点：细橙描边 */
+:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------------------------
+   Element Plus 控件统一：细线、墨色、等宽小字
+   ------------------------------------------------------------------------- */
+
+/* 输入框 / 文本域 */
+.el-input__wrapper,
+.el-textarea__inner {
+  background-color: var(--surface);
+  border-radius: var(--radius-xs) !important;
+  box-shadow: 0 0 0 1px var(--line) inset !important;
+  transition: box-shadow 0.16s ease;
+}
+
+.el-input__wrapper:hover,
+.el-textarea__inner:hover {
+  box-shadow: 0 0 0 1px var(--line-strong) inset !important;
+}
+
+.el-input__wrapper.is-focus,
+.el-textarea__inner:focus {
+  box-shadow: 0 0 0 1px var(--ink) inset !important;
+}
+
+.el-input__inner {
+  color: var(--ink);
+  font-size: 13.5px;
+}
+
+.el-input__inner::placeholder,
+.el-textarea__inner::placeholder {
+  color: var(--faint);
+}
+
+.el-input__prefix-inner,
+.el-input__suffix-inner,
+.el-input__clear {
+  color: var(--faint);
+}
+
+/* 按钮 */
+.el-button {
+  border-radius: var(--radius-xs);
+  font-family: var(--font-sans);
+}
+
+.el-button--primary {
+  --el-button-bg-color: var(--ink);
+  --el-button-border-color: var(--ink);
+  --el-button-text-color: var(--paper);
+  --el-button-hover-bg-color: var(--ink-soft);
+  --el-button-hover-border-color: var(--ink-soft);
+  --el-button-hover-text-color: var(--paper);
+  --el-button-active-bg-color: var(--ink);
+  --el-button-active-border-color: var(--ink);
+  --el-button-active-text-color: var(--paper);
+  --el-button-disabled-bg-color: var(--line);
+  --el-button-disabled-border-color: var(--line);
+  --el-button-disabled-text-color: var(--faint);
+}
+
+.el-button.is-text,
+.el-button.is-link {
+  color: var(--muted);
+}
+
+.el-button.is-text:hover,
+.el-button.is-link:hover {
+  color: var(--ink);
+  background-color: transparent;
+}
+
+/* 标签页：下划线文字样式 */
+.el-tabs__header {
+  margin-bottom: 18px;
+}
+
+.el-tabs__nav-wrap::after {
+  height: 1px;
+  background-color: var(--line);
+}
+
+.el-tabs__item {
+  height: 34px;
+  padding: 0 18px 0 0;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+}
+
+.el-tabs__item.is-active {
+  color: var(--ink);
+}
+
+.el-tabs__item:hover {
+  color: var(--ink);
+}
+
+.el-tabs__active-bar {
+  height: 1px;
+  background-color: var(--ink);
+}
+
+/* 表单标签与校验信息 */
+.el-form-item__label {
+  padding-bottom: 4px !important;
+  font-family: var(--font-mono);
+  font-size: 10px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted) !important;
+}
+
+.el-form-item__error {
+  padding-top: 3px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.02em;
+  color: var(--danger);
+}
+
+.el-form-item.is-error .el-input__wrapper {
+  box-shadow: 0 0 0 1px var(--danger) inset !important;
+}
+
+/* 文字链接 */
+.el-link {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.el-link.el-link--primary {
+  color: var(--accent);
+}
+
+.el-link.el-link--primary:hover {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* 浮层 / 提示 */
+.el-popper.is-dark {
+  padding: 5px 9px;
+  border: 1px solid var(--ink);
+  border-radius: var(--radius-xs);
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+
+.el-popper.is-dark .el-popper__arrow::before {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+/* 顶部消息提示 */
 .el-message {
   max-width: min(560px, 92vw);
+  min-width: 0;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xs);
+  background: var(--surface);
+  box-shadow: 0 8px 24px rgba(26, 26, 23, 0.1);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.03em;
 }
 
-.el-button:focus-visible {
-  outline: 2px solid rgba(64, 158, 255, 0.45);
-  outline-offset: 1px;
+.el-message--success,
+.el-message--warning,
+.el-message--error,
+.el-message--info {
+  --el-message-bg-color: var(--surface);
+  --el-message-border-color: var(--line);
+  --el-message-text-color: var(--ink);
 }
 
-html.dark .el-card,
-html.dark .el-dialog {
-  background: var(--lanchat-card);
+.el-message--success .el-message__icon {
+  color: var(--online);
 }
 
-/* 通用动画：消息淡入 */
+.el-message--warning .el-message__icon,
+.el-message--error .el-message__icon {
+  color: var(--accent);
+}
+
+.el-message--info .el-message__icon {
+  color: var(--muted);
+}
+
+.el-message .el-message__content {
+  color: var(--ink) !important;
+}
+
+/* 确认弹窗 */
+.el-message-box {
+  padding: 22px 24px 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: 0 18px 48px rgba(26, 26, 23, 0.18);
+}
+
+.el-message-box__title {
+  font-family: var(--font-serif);
+  font-size: 19px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.el-message-box__message {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.el-message-box__btns .el-button {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* 进度条：细线、墨色，无圆角 */
+.el-progress-bar__outer {
+  border-radius: 0;
+  background-color: var(--line);
+}
+
+.el-progress-bar__inner {
+  border-radius: 0;
+  background-color: var(--ink);
+}
+
+.el-progress__text {
+  font-family: var(--font-mono);
+  font-size: 10.5px !important;
+  color: var(--muted);
+}
+
+/* 滚动条容器（Element 内部若使用） */
+.el-scrollbar__thumb {
+  background-color: var(--line-strong);
+  border-radius: 0;
+}
+
+/* 通用淡入动画 */
 @keyframes lanchat-fade-in {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(4px);
   }
   to {
     opacity: 1;

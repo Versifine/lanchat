@@ -1,44 +1,54 @@
 <template>
   <div class="login-page">
     <div class="login-shell">
-      <!-- 左侧品牌区：渐变背景 + logo + slogan -->
+      <!-- 左侧品牌区：纸色 + 大号衬线字标 + 等宽小标签 -->
       <section class="brand-panel">
         <div class="brand-top">
-          <div class="brand-logo">L</div>
-          <div class="brand-title">
-            <h1>LanChat</h1>
-            <p class="brand-slogan">局域网内的即时沟通</p>
+          <div class="brand-mark">
+            <span class="brand-logo">L</span>
+            <span class="brand-kicker">LOCAL NETWORK MESSENGER</span>
           </div>
+          <h1 class="brand-wordmark">LanChat</h1>
+          <p class="brand-slogan">局域网内的即时沟通</p>
+          <p class="brand-tags">
+            B/S ARCHITECTURE · JAVA 21 · SPRING BOOT 3.5<br />
+            VUE 3 · WEBSOCKET · SQLITE
+          </p>
         </div>
 
         <ul class="brand-points">
           <li>
-            <el-icon :size="16"><ChatDotRound /></el-icon>
+            <span class="point-index">01</span>
             <span>群聊 / 私聊实时推送，离线消息自动补发</span>
           </li>
           <li>
-            <el-icon :size="16"><FolderOpened /></el-icon>
+            <span class="point-index">02</span>
             <span>文件上传下载，SHA-256 完整性校验</span>
           </li>
           <li>
-            <el-icon :size="16"><Refresh /></el-icon>
+            <span class="point-index">03</span>
             <span>心跳保活，断线自动重连</span>
           </li>
         </ul>
 
-        <div class="brand-footer">
-          <span class="brand-badge">B/S 架构</span>
-          <span class="brand-badge">Vue 3 + Spring Boot</span>
+        <div class="brand-rule"></div>
+
+        <div class="brand-status">
+          <span class="status-led"></span>
+          <span class="status-text">OPERATIONAL</span>
+          <span class="status-meta">WS /ws/chat · REST /api</span>
         </div>
       </section>
 
-      <!-- 右侧表单卡片 -->
+      <!-- 右侧表单面板：白色 + 1px 细线分隔 -->
       <section class="form-panel">
         <div class="form-brand">
-          <div class="brand-logo small">L</div>
-          <span>LanChat · 局域网内的即时沟通</span>
+          <span class="form-brand-logo">L</span>
+          <span class="form-brand-name">LanChat</span>
+          <span class="form-brand-tag">LOCAL NETWORK MESSENGER</span>
         </div>
 
+        <p class="form-kicker">{{ isRegister ? 'REGISTER' : 'SIGN IN' }} — 局域网即时通讯</p>
         <h2 class="form-title">{{ isRegister ? '创建账号' : '欢迎回来' }}</h2>
         <p class="form-subtitle">
           {{ isRegister ? '注册后即可加入局域网聊天室' : '登录 LanChat，开始和同事聊天' }}
@@ -58,7 +68,7 @@
           class="login-form"
           @submit.prevent="handleSubmit"
         >
-          <el-form-item label="用户名" prop="username">
+          <el-form-item label="USERNAME / 用户名" prop="username">
             <el-input
               v-model="form.username"
               placeholder="3–20 位字母、数字或下划线"
@@ -68,7 +78,7 @@
             />
           </el-form-item>
 
-          <el-form-item v-if="isRegister" label="昵称" prop="nickname">
+          <el-form-item v-if="isRegister" label="NICKNAME / 昵称" prop="nickname">
             <el-input
               v-model="form.nickname"
               placeholder="显示名称，留空默认同用户名"
@@ -78,7 +88,7 @@
             />
           </el-form-item>
 
-          <el-form-item label="密码" prop="password">
+          <el-form-item label="PASSWORD / 密码" prop="password">
             <el-input
               v-model="form.password"
               type="password"
@@ -95,22 +105,24 @@
             :loading="submitting"
             native-type="submit"
           >
-            {{ isRegister ? '注册并进入' : '登 录' }}
+            {{ isRegister ? 'SIGN UP / 注 册' : 'LOG IN / 登 录' }}
           </el-button>
         </el-form>
 
         <div class="form-switch">
-          <span>{{ isRegister ? '已有账号？' : '还没有账号？' }}</span>
+          <span class="switch-label">{{ isRegister ? '已有账号？' : '还没有账号？' }}</span>
           <el-link type="primary" :underline="false" @click="switchTab">
-            {{ isRegister ? '去登录' : '去注册' }}
+            {{ isRegister ? 'SIGN IN / 去登录' : 'SIGN UP / 去注册' }}
           </el-link>
         </div>
 
-        <p class="page-footer">Java语言及网络编程课程报告项目</p>
+        <p class="page-footer">JAVA语言及网络编程 · 课程报告项目</p>
       </section>
     </div>
 
-    <p class="login-page-footer">LanChat · 局域网聊天室 · Java语言及网络编程课程报告项目</p>
+    <p class="login-page-footer">
+      LANCHAT — LOCAL NETWORK MESSENGER · JAVA语言及网络编程课程报告项目 · 2026
+    </p>
   </div>
 </template>
 
@@ -118,7 +130,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Avatar, ChatDotRound, FolderOpened, Lock, Refresh, User } from '@element-plus/icons-vue'
+import { Avatar, Lock, User } from '@element-plus/icons-vue'
 import { takeFlash } from '../api/http'
 import { useAuthStore } from '../stores/auth'
 
@@ -206,265 +218,315 @@ onMounted(() => {
 
 <style scoped>
 .login-page {
-  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 18px;
+  gap: 22px;
   min-height: 100vh;
-  padding: 28px 20px;
-  background: var(--lanchat-gradient);
-  overflow: hidden;
-}
-
-/* 背景装饰光斑 */
-.login-page::before,
-.login-page::after {
-  content: '';
-  position: absolute;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.12);
-  filter: blur(2px);
-  pointer-events: none;
-}
-
-.login-page::before {
-  width: 420px;
-  height: 420px;
-  top: -140px;
-  right: -120px;
-}
-
-.login-page::after {
-  width: 300px;
-  height: 300px;
-  bottom: -120px;
-  left: -90px;
+  padding: 40px 24px;
+  background: var(--paper);
 }
 
 .login-shell {
-  position: relative;
-  z-index: 1;
   display: grid;
-  grid-template-columns: 360px minmax(0, 1fr);
-  width: min(900px, 100%);
-  border-radius: 18px;
-  background: var(--lanchat-card);
-  box-shadow: 0 24px 64px rgba(17, 24, 64, 0.32);
+  grid-template-columns: minmax(0, 1.06fr) minmax(0, 0.94fr);
+  width: min(1060px, 100%);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--paper);
   overflow: hidden;
 }
 
+/* 左侧：纸色品牌区 */
 .brand-panel {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 26px;
-  padding: 42px 34px 34px;
-  background: var(--lanchat-gradient);
-  color: #fff;
+  padding: 48px 54px 30px;
+  background: var(--paper);
 }
 
 .brand-top {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+}
+
+.brand-mark {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 44px;
 }
 
 .brand-logo {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 54px;
-  height: 54px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.18);
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  color: #fff;
-  font-size: 28px;
-  font-weight: 700;
-  backdrop-filter: blur(4px);
-}
-
-.brand-logo.small {
   width: 34px;
   height: 34px;
-  border-radius: 10px;
-  font-size: 18px;
-  background: var(--lanchat-gradient);
-  border: none;
+  border: 1px solid var(--ink);
+  border-radius: var(--radius-xs);
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: 19px;
+  line-height: 1;
 }
 
-.brand-title h1 {
+.brand-kicker {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.2em;
+}
+
+.brand-wordmark {
   margin: 0;
-  font-size: 30px;
-  font-weight: 700;
-  letter-spacing: 0.6px;
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: clamp(54px, 5.6vw, 76px);
+  font-weight: 500;
+  line-height: 0.98;
+  letter-spacing: -0.03em;
 }
 
 .brand-slogan {
-  margin: 4px 0 0;
-  color: rgba(255, 255, 255, 0.86);
-  font-size: 14px;
-  letter-spacing: 1px;
+  margin: 18px 0 0;
+  color: var(--muted);
+  font-family: var(--font-serif);
+  font-size: 16px;
+  letter-spacing: 0.02em;
+}
+
+.brand-tags {
+  margin: 28px 0 0;
+  color: var(--faint);
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  line-height: 1.9;
+  letter-spacing: 0.14em;
 }
 
 .brand-points {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  margin: 0;
+  gap: 10px;
+  margin: 42px 0 0;
   padding: 0;
   list-style: none;
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 13px;
-  line-height: 1.5;
 }
 
 .brand-points li {
   display: flex;
-  align-items: flex-start;
-  gap: 9px;
+  align-items: baseline;
+  gap: 14px;
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  line-height: 1.55;
 }
 
-.brand-points .el-icon {
-  margin-top: 3px;
-  opacity: 0.92;
+.point-index {
+  flex: 0 0 auto;
+  color: var(--faint);
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.1em;
 }
 
-.brand-footer {
+.brand-rule {
+  height: 1px;
+  margin: 42px 0 0;
+  background: var(--line);
+}
+
+.brand-status {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  align-items: center;
+  gap: 9px;
+  margin-top: auto;
+  padding-top: 18px;
 }
 
-.brand-badge {
-  padding: 3px 9px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.16);
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  font-size: 11px;
-  letter-spacing: 0.3px;
+.status-led {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--online);
 }
 
+.status-text {
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+}
+
+.status-meta {
+  margin-left: auto;
+  color: var(--faint);
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+/* 右侧：白色表单面板 */
 .form-panel {
   display: flex;
   flex-direction: column;
-  padding: 38px 42px 24px;
-  background: var(--lanchat-card);
+  padding: 48px 54px 28px;
+  border-left: 1px solid var(--line);
+  background: var(--surface);
 }
 
 .form-brand {
   display: none;
   align-items: center;
   gap: 10px;
-  margin-bottom: 18px;
-  color: var(--lanchat-text-secondary);
-  font-size: 13px;
+  margin-bottom: 26px;
+}
+
+.form-brand-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--ink);
+  border-radius: var(--radius-xs);
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: 15px;
+  line-height: 1;
+}
+
+.form-brand-name {
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.form-brand-tag {
+  color: var(--faint);
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+}
+
+.form-kicker {
+  margin: 0 0 12px;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
 }
 
 .form-title {
   margin: 0;
-  color: var(--lanchat-text);
-  font-size: 23px;
-  font-weight: 700;
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: 32px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
 }
 
 .form-subtitle {
-  margin: 6px 0 10px;
-  color: var(--lanchat-text-secondary);
-  font-size: 13px;
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 12.5px;
 }
 
 .form-tabs {
-  margin-bottom: 8px;
+  margin-top: 30px;
+  margin-bottom: 10px;
 }
 
 .form-tabs :deep(.el-tabs__header) {
-  margin-bottom: 18px;
+  margin-bottom: 22px;
 }
 
-.login-form :deep(.el-form-item__label) {
-  padding-bottom: 4px;
-  color: var(--lanchat-text);
-  font-size: 13px;
-  font-weight: 500;
+.form-tabs :deep(.el-tabs__item) {
+  padding: 0 0 0 0;
 }
 
 .login-form :deep(.el-form-item) {
-  margin-bottom: 22px;
+  margin-bottom: 21px;
 }
 
 .submit-button {
   width: 100%;
-  height: 44px;
-  margin-top: 4px;
-  border: none;
-  border-radius: var(--lanchat-radius-input);
-  background: var(--lanchat-gradient);
-  font-size: 15px;
-  letter-spacing: 2px;
-  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.32);
-}
-
-.submit-button:hover {
-  opacity: 0.94;
+  height: 42px;
+  margin-top: 8px;
+  border-radius: var(--radius-xs);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
 }
 
 .form-switch {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  margin-top: 16px;
-  color: var(--lanchat-text-secondary);
-  font-size: 13px;
+  gap: 8px;
+  margin-top: 20px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+}
+
+.switch-label {
+  letter-spacing: 0.1em;
 }
 
 .page-footer {
   margin: auto 0 0;
-  padding-top: 20px;
-  color: var(--lanchat-text-secondary);
-  font-size: 11px;
+  padding-top: 26px;
+  color: var(--faint);
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.1em;
   text-align: center;
-  letter-spacing: 0.2px;
+  text-transform: uppercase;
 }
 
 .login-page-footer {
-  position: relative;
-  z-index: 1;
   margin: 0;
-  color: rgba(255, 255, 255, 0.72);
-  font-size: 12px;
+  color: var(--faint);
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
   text-align: center;
 }
 
-html.dark .form-panel {
-  background: var(--lanchat-card);
-}
-
-@media (max-width: 820px) {
+@media (max-width: 900px) {
   .login-shell {
     grid-template-columns: minmax(0, 1fr);
-    width: min(440px, 100%);
+    width: min(460px, 100%);
   }
   .brand-panel {
     display: none;
   }
   .form-panel {
-    padding: 30px 26px 20px;
+    padding: 36px 30px 24px;
+    border-left: 0;
   }
   .form-brand {
     display: flex;
   }
 }
 
-@media (max-width: 420px) {
+@media (max-width: 460px) {
   .login-page {
-    padding: 16px 12px;
+    padding: 20px 12px;
   }
   .form-panel {
-    padding: 24px 18px 18px;
+    padding: 28px 20px 20px;
+  }
+  .form-title {
+    font-size: 28px;
   }
 }
 </style>

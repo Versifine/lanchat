@@ -14,27 +14,15 @@
 import { computed } from 'vue'
 
 /**
- * 头像：昵称首字 + 背景色哈希（同一用户颜色稳定），可选在线小圆点。
+ * 头像：方形细线小方块 + 等宽首字母（编辑排版风格，单色无彩色）。
+ * 可选在线小圆点（绿色仅用于在线状态）。
  */
 const props = defineProps({
   user: { type: Object, default: () => ({}) },
-  size: { type: Number, default: 36 },
+  size: { type: Number, default: 28 },
   showDot: { type: Boolean, default: false },
   online: { type: Boolean, default: false }
 })
-
-const PALETTE = [
-  '#667eea',
-  '#409eff',
-  '#67c23a',
-  '#e6a23c',
-  '#f56c6c',
-  '#8e44ad',
-  '#16a085',
-  '#d35400',
-  '#2c3e50',
-  '#1abc9c'
-]
 
 const displayName = computed(
   () => props.user?.nickname || props.user?.username || props.user?.name || '未知用户'
@@ -45,27 +33,17 @@ const initial = computed(() => {
   return name ? Array.from(name)[0].toUpperCase() : '?'
 })
 
-const seed = computed(() => {
-  const raw = String(props.user?.id ?? props.user?.username ?? displayName.value)
-  let hash = 0
-  for (let index = 0; index < raw.length; index += 1) {
-    hash = (hash * 31 + raw.charCodeAt(index)) % 100000
-  }
-  return hash
-})
-
 const sizeClass = computed(() => {
-  if (props.size <= 28) return 'sm'
-  if (props.size <= 34) return 'md'
-  if (props.size <= 40) return 'lg'
+  if (props.size <= 26) return 'sm'
+  if (props.size <= 32) return 'md'
+  if (props.size <= 38) return 'lg'
   return 'xl'
 })
 
 const avatarStyle = computed(() => ({
   width: `${props.size}px`,
   height: `${props.size}px`,
-  background: PALETTE[seed.value % PALETTE.length],
-  fontSize: `${Math.round(props.size * 0.42)}px`
+  fontSize: `${Math.max(10, Math.round(props.size * 0.38))}px`
 }))
 </script>
 
@@ -76,12 +54,14 @@ const avatarStyle = computed(() => ({
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  color: #fff;
-  font-weight: 600;
-  letter-spacing: 0.5px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-xs);
+  background: var(--surface-muted);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-weight: 500;
+  letter-spacing: 0;
   user-select: none;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
 .avatar-initial {
@@ -91,21 +71,22 @@ const avatarStyle = computed(() => ({
 
 .avatar-status {
   position: absolute;
-  right: -1px;
-  bottom: -1px;
-  width: 10px;
-  height: 10px;
+  right: -3px;
+  bottom: -3px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: #c0c4cc;
-  border: 2px solid var(--lanchat-card);
+  background: var(--line-strong);
+  border: 1px solid var(--surface);
   transition: background-color 0.2s ease;
 }
 
 .avatar-status.is-online {
-  background: #67c23a;
+  background: var(--online);
 }
 
-.avatar-sm {
-  box-shadow: none;
+.avatar-sm .avatar-status {
+  right: -2px;
+  bottom: -2px;
 }
 </style>

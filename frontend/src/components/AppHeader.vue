@@ -1,38 +1,48 @@
 <template>
   <header class="app-header">
     <div class="header-left">
-      <el-button class="menu-toggle" text circle aria-label="切换会话列表" @click="emit('toggle-sidebar')">
-        <el-icon :size="20"><Menu /></el-icon>
-      </el-button>
+      <button
+        type="button"
+        class="menu-toggle"
+        aria-label="切换会话列表"
+        @click="emit('toggle-sidebar')"
+      >
+        <el-icon :size="16"><Menu /></el-icon>
+      </button>
+
       <div class="brand">
         <span class="brand-logo">L</span>
         <span class="brand-name">LanChat</span>
+        <span class="brand-kicker">LOCAL NETWORK MESSENGER</span>
       </div>
+
       <span class="online-pill">
         <span class="online-dot" :class="{ connected: chat.connected }"></span>
-        在线 {{ chat.onlineCount }} 人
+        ONLINE {{ chat.onlineCount }}
       </span>
     </div>
 
     <div class="header-right">
       <div v-if="auth.user" class="current-user">
-        <UserAvatar :user="auth.user" :size="32" />
+        <UserAvatar :user="auth.user" :size="26" />
         <span class="current-user-name">{{ auth.user.nickname || auth.user.username }}</span>
       </div>
-      <el-tooltip :content="isDark ? '切换到亮色模式' : '切换到暗色模式'" placement="bottom">
-        <el-switch
-          class="theme-switch"
-          :model-value="isDark"
-          inline-prompt
-          :active-icon="Moon"
-          :inactive-icon="Sunny"
-          @change="toggleTheme"
-        />
-      </el-tooltip>
-      <el-button text class="logout-button" @click="handleLogout">
-        <el-icon><SwitchButton /></el-icon>
+
+      <button
+        type="button"
+        class="theme-switch"
+        :aria-label="isDark ? '切换到亮色模式' : '切换到暗色模式'"
+        :title="isDark ? '切换到亮色模式' : '切换到暗色模式'"
+        @click="toggleTheme"
+      >
+        <span class="theme-option" :class="{ active: !isDark }">LIGHT</span>
+        <span class="theme-slash">/</span>
+        <span class="theme-option" :class="{ active: isDark }">DARK</span>
+      </button>
+
+      <button type="button" class="logout-button" @click="handleLogout">
         <span class="logout-text">退出</span>
-      </el-button>
+      </button>
     </div>
   </header>
 </template>
@@ -41,7 +51,7 @@
 import { watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessageBox } from 'element-plus'
-import { Menu, Moon, Sunny, SwitchButton } from '@element-plus/icons-vue'
+import { Menu } from '@element-plus/icons-vue'
 import UserAvatar from './UserAvatar.vue'
 import { useAuthStore } from '../stores/auth'
 import { useChatStore } from '../stores/chat'
@@ -81,13 +91,12 @@ async function handleLogout() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  height: var(--lanchat-header-height);
-  padding: 0 18px;
-  background: var(--lanchat-card);
-  border-bottom: 1px solid var(--lanchat-border);
-  box-shadow: var(--lanchat-shadow);
+  gap: 18px;
   flex: 0 0 auto;
+  height: var(--header-height);
+  padding: 0 20px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
   z-index: 20;
 }
 
@@ -95,68 +104,91 @@ async function handleLogout() {
 .header-right {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
   min-width: 0;
 }
 
 .menu-toggle {
   display: none;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xs);
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.menu-toggle:hover {
+  border-color: var(--line-strong);
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 8px;
-  user-select: none;
+  gap: 9px;
+  min-width: 0;
 }
 
 .brand-logo {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
-  background: var(--lanchat-gradient);
-  color: #fff;
-  font-size: 17px;
-  font-weight: 700;
-  box-shadow: 0 3px 8px rgba(102, 126, 234, 0.35);
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--ink);
+  border-radius: var(--radius-xs);
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: 14px;
+  line-height: 1;
 }
 
 .brand-name {
+  color: var(--ink);
+  font-family: var(--font-serif);
   font-size: 18px;
-  font-weight: 700;
-  letter-spacing: 0.4px;
-  background: var(--lanchat-gradient);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.brand-kicker {
+  padding-left: 10px;
+  border-left: 1px solid var(--line);
+  color: var(--faint);
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.16em;
+  white-space: nowrap;
 }
 
 .online-pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: rgba(103, 194, 58, 0.1);
-  color: #529b2e;
-  font-size: 12px;
+  gap: 7px;
+  padding-left: 16px;
+  border-left: 1px solid var(--line);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
   white-space: nowrap;
 }
 
 .online-dot {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: #909399;
+  background: var(--faint);
   transition: background-color 0.2s ease;
 }
 
 .online-dot.connected {
-  background: #67c23a;
-  box-shadow: 0 0 0 3px rgba(103, 194, 58, 0.18);
+  background: var(--online);
 }
 
 .current-user {
@@ -167,49 +199,103 @@ async function handleLogout() {
 }
 
 .current-user-name {
-  max-width: 140px;
   overflow: hidden;
+  max-width: 150px;
+  color: var(--ink);
+  font-size: 12.5px;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: var(--lanchat-text);
-  font-weight: 500;
 }
 
 .theme-switch {
-  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--faint);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+}
+
+.theme-option {
+  transition: color 0.16s ease;
+}
+
+.theme-option.active {
+  color: var(--ink);
+}
+
+.theme-switch:hover .theme-option {
+  color: var(--muted);
+}
+
+.theme-switch:hover .theme-option.active {
+  color: var(--ink);
+}
+
+.theme-slash {
+  color: var(--line-strong);
 }
 
 .logout-button {
-  color: var(--lanchat-text-secondary);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--line-strong);
+  cursor: pointer;
 }
 
 .logout-button:hover {
-  color: #f56c6c;
+  color: var(--accent);
+  text-decoration-color: var(--accent);
+}
+
+@media (max-width: 900px) {
+  .brand-kicker {
+    display: none;
+  }
 }
 
 @media (max-width: 820px) {
   .app-header {
-    padding: 0 10px;
-    gap: 6px;
+    padding: 0 12px;
+    gap: 10px;
   }
   .menu-toggle {
     display: inline-flex;
   }
-  .brand-name {
-    display: none;
-  }
   .online-pill {
-    padding: 2px 8px;
+    padding-left: 10px;
   }
   .current-user-name {
     display: none;
   }
-  .logout-text {
-    display: none;
-  }
   .header-left,
   .header-right {
-    gap: 8px;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .brand-name {
+    font-size: 16px;
+  }
+  .online-pill {
+    border-left: 0;
+    padding-left: 0;
+  }
+  .logout-button {
+    display: none;
   }
 }
 </style>

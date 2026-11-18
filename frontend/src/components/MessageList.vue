@@ -1,16 +1,16 @@
 <template>
   <div ref="scrollRef" class="message-list">
     <div v-if="historyLoading && !items.length" class="list-state">
-      <el-icon class="is-loading" :size="18"><Loading /></el-icon>
+      <el-icon class="is-loading" :size="14"><Loading /></el-icon>
       <span>正在加载历史消息…</span>
     </div>
 
     <div v-else-if="!items.length" class="list-state empty">
       <div class="empty-avatar">
-        <el-icon :size="30"><ChatDotRound /></el-icon>
+        <el-icon :size="20"><ChatDotRound /></el-icon>
       </div>
       <p class="empty-title">{{ chat.activeTitle }}</p>
-      <p class="empty-tip">还没有消息，发送第一条吧</p>
+      <p class="empty-tip">NO MESSAGES YET — 发送第一条消息</p>
     </div>
 
     <template v-for="item in items" :key="item.key">
@@ -19,7 +19,7 @@
       </div>
 
       <div v-else-if="item.type === 'system'" class="system-message">
-        <el-icon :size="13"><InfoFilled /></el-icon>
+        <span class="system-mark">*</span>
         <span>{{ item.message.message }}</span>
       </div>
 
@@ -32,7 +32,7 @@
           v-if="!item.grouped"
           class="message-avatar"
           :user="item.message.sender"
-          :size="34"
+          :size="30"
         />
 
         <div class="message-main">
@@ -40,7 +40,7 @@
             <span v-if="!item.isSelf" class="message-sender">
               {{ senderName(item.message.sender) }}
             </span>
-            <span v-if="item.message.offline" class="offline-tag">离线消息</span>
+            <span v-if="item.message.offline" class="offline-tag">OFFLINE</span>
             <span class="message-time">{{ formatTime(item.message.createdAt) }}</span>
           </div>
 
@@ -60,7 +60,7 @@
 
 <script setup>
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
-import { ChatDotRound, InfoFilled, Loading } from '@element-plus/icons-vue'
+import { ChatDotRound, Loading } from '@element-plus/icons-vue'
 import UserAvatar from './UserAvatar.vue'
 import FileMessage from './FileMessage.vue'
 import { useChatStore } from '../stores/chat'
@@ -161,8 +161,9 @@ onMounted(async () => {
 .message-list {
   flex: 1 1 auto;
   min-height: 0;
+  padding: 22px 26px 14px;
   overflow-y: auto;
-  padding: 18px 22px 10px;
+  background: var(--paper);
 }
 
 .list-state {
@@ -172,75 +173,92 @@ onMounted(async () => {
   gap: 8px;
   height: 100%;
   min-height: 160px;
-  color: var(--lanchat-text-secondary);
-  font-size: 13px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
 }
 
 .list-state.empty {
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .empty-avatar {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 64px;
-  height: 64px;
-  margin-bottom: 6px;
-  border-radius: 50%;
-  background: rgba(64, 158, 255, 0.1);
-  color: var(--lanchat-primary);
+  width: 44px;
+  height: 44px;
+  margin-bottom: 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-xs);
+  color: var(--muted);
 }
 
 .empty-title {
   margin: 0;
-  color: var(--lanchat-text);
-  font-size: 15px;
-  font-weight: 600;
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 500;
 }
 
 .empty-tip {
   margin: 0;
+  color: var(--faint);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .time-separator {
   display: flex;
-  justify-content: center;
-  margin: 14px 0 12px;
+  align-items: center;
+  gap: 14px;
+  margin: 18px 0 10px;
+}
+
+.time-separator::before,
+.time-separator::after {
+  content: '';
+  flex: 1 1 auto;
+  height: 1px;
+  background: var(--line);
 }
 
 .separator-label {
-  padding: 2px 10px;
-  border-radius: 999px;
-  background: rgba(144, 147, 153, 0.12);
-  color: var(--lanchat-text-secondary);
-  font-size: 11px;
+  flex: 0 0 auto;
+  color: var(--faint);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
 }
 
 .system-message {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  gap: 6px;
   margin: 10px 0;
-  color: var(--lanchat-text-secondary);
-  font-size: 12px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
   text-align: center;
 }
 
-.system-message span {
-  padding: 2px 10px;
-  border-radius: 999px;
-  background: rgba(144, 147, 153, 0.1);
+.system-mark {
+  color: var(--accent);
 }
 
 .message-row {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  margin-top: 14px;
-  animation: lanchat-fade-in 0.18s ease;
+  margin-top: 16px;
+  animation: lanchat-fade-in 0.16s ease;
 }
 
 .message-row.grouped {
@@ -252,14 +270,14 @@ onMounted(async () => {
 }
 
 .message-avatar {
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 .message-main {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  max-width: min(72%, 640px);
+  max-width: min(70%, 620px);
   min-width: 0;
 }
 
@@ -271,9 +289,12 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 0 4px 4px;
-  color: var(--lanchat-text-secondary);
-  font-size: 12px;
+  margin: 0 2px 4px;
+  color: var(--faint);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 .message-row.self .message-meta {
@@ -281,68 +302,65 @@ onMounted(async () => {
 }
 
 .message-sender {
-  color: var(--lanchat-text-secondary);
-  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0.08em;
 }
 
 .message-time {
-  font-size: 11px;
-  opacity: 0.85;
+  color: var(--faint);
 }
 
 .offline-tag {
-  padding: 0 5px;
-  border-radius: 6px;
-  background: rgba(230, 162, 60, 0.16);
-  color: #b88230;
-  font-size: 11px;
+  padding: 0 3px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-xs);
+  color: var(--accent);
+  font-size: 8px;
+  letter-spacing: 0.1em;
 }
 
 .message-bubble {
-  padding: 9px 13px;
-  border-radius: var(--lanchat-radius-bubble);
-  font-size: 14px;
-  line-height: 1.6;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  font-size: 13.5px;
+  line-height: 1.65;
   white-space: pre-wrap;
   word-break: break-word;
   overflow-wrap: anywhere;
 }
 
 .bubble-other {
-  border: 1px solid var(--lanchat-border);
-  border-top-left-radius: 4px;
-  background: var(--lanchat-bubble-other-bg);
-  color: var(--lanchat-bubble-other-text);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
 }
 
 .bubble-self {
-  border-top-right-radius: 4px;
-  background: var(--lanchat-bubble-self);
-  color: var(--lanchat-bubble-self-text);
-  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.28);
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
 }
 
 .message-row.grouped .message-main {
-  margin-left: 44px;
+  margin-left: 40px;
 }
 
 .message-row.grouped.self .message-main {
+  margin-right: 40px;
   margin-left: 0;
-  margin-right: 44px;
 }
 
 @media (max-width: 640px) {
   .message-list {
-    padding: 12px 12px 8px;
+    padding: 14px 12px 8px;
   }
   .message-main {
     max-width: 82%;
   }
   .message-row.grouped .message-main,
   .message-row.grouped.self .message-main {
-    margin-left: 0;
     margin-right: 0;
+    margin-left: 0;
   }
 }
 </style>

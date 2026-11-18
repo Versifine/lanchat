@@ -21,12 +21,12 @@
             <UserAvatar
               v-if="chat.activeType === 'private' && chat.activePeer"
               :user="chat.activePeer"
-              :size="34"
+              :size="28"
               show-dot
               :online="chat.activePeerOnline"
             />
             <span v-else class="group-avatar">
-              <el-icon :size="18"><UserFilled /></el-icon>
+              <el-icon :size="14"><UserFilled /></el-icon>
             </span>
             <div class="conversation-texts">
               <div class="conversation-name">{{ chat.activeTitle }}</div>
@@ -38,7 +38,7 @@
 
           <div class="conversation-status">
             <span class="status-dot" :class="{ connected: chat.connected }"></span>
-            <span>{{ statusLabel }}</span>
+            <span class="status-label">{{ statusLabel }}</span>
           </div>
         </div>
 
@@ -63,7 +63,7 @@ const chat = useChatStore()
 /** 窄屏下侧栏抽屉开关 */
 const sidebarOpen = ref(false)
 
-/** 断线（重连中）时顶部黄色提示条 */
+/** 断线（重连中）时顶部提示条 */
 const showReconnectAlert = computed(() => chat.connectionState === 'reconnecting')
 
 const reconnectTitle = computed(() => {
@@ -91,16 +91,34 @@ onMounted(() => {
   height: 100vh;
   height: 100dvh;
   overflow: hidden;
-  background: var(--lanchat-bg);
+  background: var(--paper);
 }
 
 .connection-alert {
   flex: 0 0 auto;
+  padding: 6px 20px;
+  border: 0;
+  border-bottom: 1px solid var(--line-strong);
   border-radius: 0;
+  background: var(--surface-muted);
 }
 
 .connection-alert :deep(.el-alert__content) {
-  padding: 2px 0;
+  padding: 0;
+}
+
+.connection-alert :deep(.el-alert__title) {
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+}
+
+.connection-alert :deep(.el-alert__icon) {
+  width: 13px;
+  margin-right: 8px;
+  color: var(--accent);
+  font-size: 13px;
 }
 
 .chat-body {
@@ -112,42 +130,43 @@ onMounted(() => {
 
 .chat-main {
   display: flex;
-  flex-direction: column;
   flex: 1 1 auto;
+  flex-direction: column;
   min-width: 0;
   min-height: 0;
-  background: var(--lanchat-bg);
+  background: var(--paper);
 }
 
 .conversation-header {
   display: flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  flex: 0 0 auto;
-  height: 58px;
-  padding: 0 20px;
-  border-bottom: 1px solid var(--lanchat-border);
-  background: var(--lanchat-card);
+  gap: 14px;
+  height: 54px;
+  padding: 0 22px;
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
 }
 
 .conversation-heading {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 11px;
   min-width: 0;
 }
 
 .group-avatar {
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  flex: 0 0 auto;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: var(--lanchat-gradient);
-  color: #fff;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-xs);
+  background: var(--surface);
+  color: var(--ink);
 }
 
 .conversation-texts {
@@ -156,44 +175,53 @@ onMounted(() => {
 
 .conversation-name {
   overflow: hidden;
-  color: var(--lanchat-text);
-  font-size: 15px;
-  font-weight: 600;
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .conversation-subtitle {
   overflow: hidden;
-  color: var(--lanchat-text-secondary);
-  font-size: 12px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
   text-overflow: ellipsis;
+  text-transform: uppercase;
   white-space: nowrap;
 }
 
 .conversation-subtitle.offline {
-  color: #b88230;
+  color: var(--accent);
 }
 
 .conversation-status {
   display: flex;
-  align-items: center;
-  gap: 6px;
   flex: 0 0 auto;
-  color: var(--lanchat-text-secondary);
-  font-size: 12px;
+  align-items: center;
+  gap: 7px;
+  padding-left: 14px;
+  border-left: 1px solid var(--line);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .status-dot {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: #e6a23c;
+  background: var(--accent);
 }
 
 .status-dot.connected {
-  background: #67c23a;
-  box-shadow: 0 0 0 3px rgba(103, 194, 58, 0.16);
+  background: var(--online);
 }
 
 .sidebar-mask {
@@ -202,17 +230,23 @@ onMounted(() => {
 
 @media (max-width: 820px) {
   .sidebar-mask {
-    display: block;
     position: absolute;
     inset: 0;
     z-index: 12;
-    background: rgba(0, 0, 0, 0.32);
+    display: block;
+    background: var(--overlay);
   }
   .conversation-header {
-    height: 52px;
+    height: 50px;
     padding: 0 12px;
   }
   .conversation-status {
+    padding-left: 10px;
+  }
+}
+
+@media (max-width: 520px) {
+  .status-label {
     display: none;
   }
 }
