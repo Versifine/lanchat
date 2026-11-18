@@ -99,3 +99,14 @@
   - Tag `v1.0.0` + Release，附件为 ASCII 命名的报告 docx/pdf（避免中文文件名被 GitHub 资产 API 转义）。
 - **打包**：`（学号）_（姓名）.zip`（52.4 MB，315 文件）含：报告 docx/pdf、可执行 `lanchat.jar`、运行说明.txt、源码（backend/frontend）、docs/skills/scripts/report（母本+图表）、assets（截图/压测数据/测试报告）。
 - **收尾状态**：8081 单服务实例仍在运行（演示数据：alice/alice123、bob/bob12345），供用户当场查看；数据库与日志为 gitignored 运行数据，不进入压缩包与仓库。
+
+## 2026-11-18 17:30–17:45 视觉重构：去彩色渐变，改为 editorial indie
+
+- 用户要求：前端不要彩色渐变，模仿国外独立网站风格。
+- frontend-dev 重写 frontend/src 9 个文件（main.css + LoginView/ChatView + 6 个组件），业务逻辑/api/ws/stores 零改动：
+  - 设计令牌：纸色 `#f6f4ef` / 墨色 `#1a1a17` / 1px 细线 `#ded9cf` / 单一暖橙 `#b4532a`；绿色只保留在线圆点；无任何 gradient（grep 验证无结果）。
+  - 字体层级：衬线（Iowan/Palatino/Georgia/Noto Serif CJK）用于字标与标题，正文系统无衬线，元信息/数字等宽大写小字号；圆角 3–4px，无阴影。
+  - 登录页纸色品牌区 + 白色表单面板；聊天页文字式 LIGHT/DARK、无胶囊会话项、白底/墨底气泡、细线文件卡片。
+  - 验收：build 通过；`grep -R gradient frontend/src` 无结果；13 项视觉断言全过、console error 0；390px 无破版。
+- Lead 复核：新视觉截图 11/11 生产 E2E 通过；重拍 `assets/screenshots/final-*.png`（2880×1800）；报告 6.2 节文字与 `docs/ui-design.md` 同步更新；报告重建（26 页、目录 46/46）；`scripts/build.sh` 重新产出单 jar；GitHub Release 附件与提交包 zip 已替换为新版。
+- 说明：旧彩色风格产物已全部替换，仓库、Release、本地 zip 三处一致。
