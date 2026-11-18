@@ -43,7 +43,7 @@
 | 工作区 | 用途 | 窗口内容 |
 |---|---|---|
 | WS1 | 功能演示 | Chrome 普通窗口（爱丽丝）+ Chrome 无痕窗口（鲍勃），左右各 50% |
-| WS2 | Shell 展示 | 终端（仓库根目录），开场展示工程规模，后面用于断线重连演示 |
+| WS2 | Shell 拉起服务 | 终端（仓库根目录），开场用一条 `java -jar` 命令拉起服务展示启动日志，后面用于断线重连演示 |
 | WS3 | 开发过程 | VS Code：`docs/SPEC.md`、`docs/api.md`、`skills/lanchat-sdd/SKILL.md`、`docs/ai-devlog.md` |
 | WS4 | AI 开发图 | `loupe` 打开 `report/figs/fig-08-01-sdd-workflow.png` |
 | WS5 | 系统架构图 | `loupe` 打开 `report/figs/fig-05-01-architecture.png` |
@@ -115,13 +115,13 @@ wf-recorder -o HDMI-A-1 -r 30 \
 | 时间 | 内容 | 工作区 | 详略 |
 |---|---|---|---|
 | 0:00–0:40 | 开场：项目一段话 + 技术栈 + 规模 | WS1 | 必留 |
-| 0:40–1:10 | Shell 展示：工程规模/提交历史/测试汇总（可选现场跑测试） | WS2 | 必留 |
-| 1:10–3:00 | 功能全展示（注册入口/登录/在线/群聊/历史/私聊/离线补发/文件/暗色） | WS1 | 必留（断线重连可选 +20s） |
-| 3:00–4:15 | 开发过程思路（为什么规格先行、契约、架构选型、数据库、实时方案、安全） | WS3 | 重点 |
-| 4:15–4:55 | AI 开发：对照 SDD 流程图讲（规格→Agent→审批→回需求→验证→发布） | WS4 | 重点 |
-| 4:55–6:05 | 系统架构：对照架构图逐层/逐箭头讲清楚 | WS5 | 重点 |
-| 6:05–6:35 | 代码走读：WS 消息处理 / 离线补发 / 前端连接管理 | WS6 | 重点 |
-| 6:35–6:45 | 结果与收尾 | WS7 | 必留 |
+| 0:40–1:05 | Shell 拉起服务：一条 `java -jar` 命令启动，展示启动日志 | WS2 | 必留 |
+| 1:05–2:55 | 功能全展示（注册入口/登录/在线/群聊/历史/私聊/离线补发/文件/暗色） | WS1 | 必留（断线重连可选 +20s） |
+| 2:55–4:10 | 开发过程思路（为什么规格先行、契约、架构选型、数据库、实时方案、安全） | WS3 | 重点 |
+| 4:10–4:50 | AI 开发：对照 SDD 流程图讲（规格→Agent→审批→回需求→验证→发布） | WS4 | 重点 |
+| 4:50–6:00 | 系统架构：对照架构图逐层/逐箭头讲清楚 | WS5 | 重点 |
+| 6:00–6:30 | 代码走读：WS 消息处理 / 离线补发 / 前端连接管理 | WS6 | 重点 |
+| 6:30–6:45 | 结果与收尾 | WS7 | 必留 |
 
 ---
 
@@ -136,36 +136,42 @@ wf-recorder -o HDMI-A-1 -r 30 \
 
 ---
 
-### 0:40–1:10 Shell 展示：项目规模与质量（WS2，可选现场跑测试）
+### 0:40–1:05 Shell 拉起服务（WS2）
 
 **屏幕**：切到 WS2 终端（仓库根目录）。
 
-**操作 1（依次执行，约 10 秒）**：
+**操作 1（约 5 秒）**：先看仓库里的启动脚本：
 
 ```bash
 cd /home/versi/Projects/Java
-find backend/src/main/java -name '*.java' | wc -l        # 输出 72
-find frontend/src -type f | wc -l                        # 输出 18
-git log --oneline | wc -l                                # 提交总数（现场看到多少个就念多少个）
-git log --oneline -8
-cat assets/test-report/summary.txt                       # 输出：总用例=160 失败=0 错误=0 跳过=0
+cat scripts/run.sh
 ```
 
 **台词**：
-"先看看工程本身：后端 72 个 Java 文件，前端 18 个源文件；这个仓库的提交历史记录的是真实的迭代过程；测试汇总里 160 个用例、0 失败。这些数字都可以在仓库里直接查。"
+"服务端的启动入口就是这几行，本质是一条 `java -jar` 命令。为了不影响正在演示的实例，我换一个端口现场拉起来，看启动日志。"
 
-**操作 2（可选，现场跑测试，约 25 秒；不想拖时长可跳过，直接进入功能演示）**：
+**操作 2（约 15 秒，启动后等日志打印完立即 Ctrl+C）：**
 
 ```bash
-mvn -f backend/pom.xml test 2>&1 | grep -E 'Tests run:|BUILD' | tail -3
+java -jar backend/target/lanchat-backend.jar --server.port=8082
 ```
 
-**台词（若现场跑）**：
-"也可以现场跑一遍：`mvn test`，160 个用例全部通过，构建成功。"
+启动日志里会出现（约 2 秒）：
+
+```
+Tomcat started on port 8082 (http) with context path '/'
+Started LanChatApplication in 1.993 seconds
+LanChat 后端启动完成: REST=http://localhost:8082/api, WebSocket=ws://localhost:8082/ws/chat, Swagger=http://localhost:8082/swagger-ui.html
+```
+
+**台词**：
+"这一个 jar 就同时包含了前端静态页面、REST 接口和 WebSocket 服务；启动完日志会直接打印三个地址。生产形态用 `scripts/run.sh` 就是同一条命令，所以老师拿到压缩包后一句 `java -jar lanchat.jar` 就能复现整套系统。"
+
+**操作 3**：`Ctrl+C` 停掉 8082 这个演示实例，确认回到终端提示符，然后切到 WS1。
 
 ---
 
-### 1:10–3:00 功能全展示（WS1）
+### 1:05–2:55 功能全展示（WS1）
 
 > 前端只在这里出现，后面不再展开；每条消息都是现场输入，没有预置聊天记录。
 
@@ -231,7 +237,7 @@ mvn -f backend/pom.xml test 2>&1 | grep -E 'Tests run:|BUILD' | tail -3
 
 ---
 
-### 3:00–4:15 开发过程思路（WS3，重点）
+### 2:55–4:10 开发过程思路（WS3，重点）
 
 **屏幕**：WS3，VS Code 依次展示四个文档；终端可辅助 `git log`。
 
@@ -262,7 +268,7 @@ mvn -f backend/pom.xml test 2>&1 | grep -E 'Tests run:|BUILD' | tail -3
 
 ---
 
-### 4:15–4:55 AI 开发：对照 SDD 流程图（WS4，重点）
+### 4:10–4:50 AI 开发：对照 SDD 流程图（WS4，重点）
 
 **屏幕**：WS4，`fig-08-01-sdd-workflow.png` 全屏。
 
@@ -271,7 +277,7 @@ mvn -f backend/pom.xml test 2>&1 | grep -E 'Tests run:|BUILD' | tail -3
 
 ---
 
-### 4:55–6:05 系统架构：对照架构图逐层讲（WS5，重点）
+### 4:50–6:00 系统架构：对照架构图逐层讲（WS5，重点）
 
 **屏幕**：WS5，`fig-05-01-architecture.png` 全屏。按从左到右、再上下讲。
 
@@ -286,7 +292,7 @@ mvn -f backend/pom.xml test 2>&1 | grep -E 'Tests run:|BUILD' | tail -3
 
 ---
 
-### 6:05–6:35 代码走读（WS6，重点）
+### 6:00–6:30 代码走读（WS6，重点）
 
 **屏幕**：WS6，VS Code 左半屏后端，右半屏前端。
 
@@ -307,7 +313,7 @@ mvn -f backend/pom.xml test 2>&1 | grep -E 'Tests run:|BUILD' | tail -3
 
 ---
 
-### 6:35–6:45 结果与收尾（WS7）
+### 6:30–6:45 结果与收尾（WS7）
 
 **屏幕**：切 WS7，Chrome 停在 GitHub Release 页；可切到报告 PDF 第一页。
 
@@ -358,7 +364,7 @@ mvn -f backend/pom.xml test 2>&1 | grep -E 'Tests run:|BUILD' | tail -3
 
 | 说法 | 证据位置 |
 |---|---|
-| 72 个 Java 文件 / 18 个前端源文件 / 提交历史 | 仓库根目录执行 `find`、`git log --oneline` |
+| 72 个 Java 文件 / 18 个前端源文件 | 仓库根目录执行 `find backend/src/main/java -name "*.java" \| wc -l`、`find frontend/src -type f \| wc -l` |
 | 160 个用例全过 | `assets/test-report/summary.txt`、`assets/test-report/surefire-reports/` |
 | 500 连接延迟、吞吐、轮询对比、上传速度 | `assets/bench/bench_summary.csv`、`assets/bench/README.md`、`assets/bench/polling_vs_ws.csv`、`assets/bench/file_upload.csv` |
 | 规格/契约/评测集/skill | `docs/SPEC.md`、`docs/api.md`、`docs/eval-plan.md`、`skills/lanchat-sdd/SKILL.md` |
@@ -374,14 +380,14 @@ mvn -f backend/pom.xml test 2>&1 | grep -E 'Tests run:|BUILD' | tail -3
 
 | 砍掉 | 节省 | 说明 |
 |---|---|---|
-| Shell 现场跑 `mvn test`（保留 `cat summary.txt`） | 20s | 只保留即时输出的规模/汇总展示 |
+| Shell 启动日志完整展示压到 15 秒（只留启动完成那几行） | 10s | 启动演示保留，减少等待镜头 |
 | 功能⑤离线补发 | 25s | 功能表里注明"离线补发已由测试覆盖"，或只在报告里讲 |
 | 功能⑧断线重连现场演示 | 20s | 默认就是可选项，不演示 |
 | 开发过程思路压到 45s | 30s | 只讲规格先行 + 契约 + 两个选型理由 |
 | 架构讲解压到 45s | 25s | 只讲分层与依赖方向，卡片略过 |
 | 代码走读压到 20s | 10s | 只讲 `ChatWebSocketHandler` 一个类 |
 
-按上表删减后约 **5:00**；保留标"重点"的段落和开场这段话即可。
+按上表删减后约 **5:00**（6:45 − 2:00）；保留标"重点"的段落和开场这段话即可。
 
 ---
 
