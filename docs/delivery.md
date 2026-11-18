@@ -6,14 +6,14 @@
 
 | 交付物 | 路径 | 状态 |
 |---|---|---|
-| 课程报告 Word | `report/课程报告-（姓名）-（学号）.docx` | 待生成 |
-| 课程报告 PDF（打印用） | `report/课程报告-（姓名）-（学号）.pdf` | 待生成 |
+| 课程报告 Word | `report/课程报告-（姓名）-（学号）.docx`（26 页，3.26 MB） | ✅ 已生成 |
+| 课程报告 PDF（打印用） | `report/课程报告-（姓名）-（学号）.pdf`（26 页，1.88 MB） | ✅ 已生成 |
 | 工程源码 | `backend/`、`frontend/`（含 README、docs、scripts） | 已完成 |
 | SDD 材料 | `docs/SPEC.md`、`docs/api.md`、`docs/eval-plan.md`、`skills/lanchat-sdd/SKILL.md`、`docs/ai-devlog.md` | 已完成 |
-| 测试与压测数据 | `backend/src/test/`、`tools/bench/`、`assets/bench/` | 进行中 |
-| 界面截图 | `assets/screenshots/` | 已有，最终重拍 |
-| 打包压缩包 | `【（学号）_（姓名）】.zip` | 待打包 |
-| GitHub 仓库 | `https://github.com/Versifine/lanchat` | ✅ 已发布（2026-11-18，用户批准） |
+| 测试与压测数据 | `backend/src/test/`（160 用例全绿）、`tools/bench/`、`assets/bench/` | ✅ 完成 |
+| 界面截图 | `assets/screenshots/final-*.png`（生产单服务 2880×1800，7 张） | ✅ 完成 |
+| 打包压缩包 | `（学号）_（姓名）.zip`（52.4 MB，315 文件，含 jar/报告/源码/资料） | ✅ 已打包 |
+| GitHub 仓库 | `https://github.com/Versifine/lanchat` + Release v1.0.0（报告 docx/pdf） | ✅ 已发布（2026-11-18，用户批准） |
 
 ## 2. 提交前检查清单
 

@@ -32,3 +32,4 @@ report/*.pdf
 report/*.toc.json
 report/.venv/
 .archify/
+*.zip

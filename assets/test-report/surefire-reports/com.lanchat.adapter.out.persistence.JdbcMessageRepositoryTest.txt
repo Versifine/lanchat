@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: com.lanchat.adapter.out.persistence.JdbcMessageRepositoryTest
 -------------------------------------------------------------------------------
-Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.182 s -- in com.lanchat.adapter.out.persistence.JdbcMessageRepositoryTest
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.203 s -- in com.lanchat.adapter.out.persistence.JdbcMessageRepositoryTest
