@@ -97,8 +97,12 @@ code -n \
   backend/src/main/java/com/lanchat/adapter/out/persistence/JdbcMessageRepository.java \
   frontend/src/api/ws.js &
 
-# 架构图查看器
+# 架构图查看器（文件本体在 report/figs/，下面这条命令直接打开）
 loupe report/figs/fig-05-01-architecture.png &
+
+# 如果要在 Chrome 里展示架构图：复制到"下载"目录再打开（flatpak Chrome 读不到 ~/Projects）
+cp report/figs/fig-05-01-architecture.png "$HOME/下载/LanChat-架构图.png" &
+# Chrome 打开： file:///home/versi/下载/LanChat-架构图.png
 
 # 结果页：报告 PDF 用本地静态服务给 Chrome 看（flatpak Chrome 读不到 ~/Projects）
 mkdir -p /tmp/lanchat-showcase
