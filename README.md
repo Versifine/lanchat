@@ -69,7 +69,7 @@ assets/                  架构图、压测原始数据、界面截图
 | [docs/eval-plan.md](docs/eval-plan.md) | 可执行的验收评测集 |
 | [docs/ui-design.md](docs/ui-design.md) | 前端视觉与交互规范 |
 | [docs/ai-devlog.md](docs/ai-devlog.md) | AI 工程化过程记录（含人工审批） |
-| [docs/demo-script.md](docs/demo-script.md) | 五分钟现场演示流程与讲稿（含准备清单/应急/Q&A） |
+| [docs/demo-script.md](docs/demo-script.md) | 五分钟录屏讲稿（开发过程/架构/代码为主，含 niri 窗口布局与录制命令） |
 | [skills/lanchat-sdd/SKILL.md](skills/lanchat-sdd/SKILL.md) | 开发规约与验收流程 |
 
 ## 测试与性能（本机实测，详见 assets/bench/README.md）
