@@ -33,3 +33,6 @@ report/*.toc.json
 report/.venv/
 .archify/
 *.zip
+
+# 课程报告与个人材料：仅本地保存，不随仓库上传
+report/

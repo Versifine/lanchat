@@ -56,7 +56,6 @@ frontend/                Vue 3 前端（Vite）
 docs/                    SPEC.md / api.md / eval-plan.md / ui-design.md / ai-devlog.md
 skills/lanchat-sdd/      AI 工程化 skill（开发规约 + 验收流程）
 scripts/                 env / dev / build / run / bench
-report/                  课程报告（Markdown 母本 + docx 生成脚本）
 assets/                  架构图、压测原始数据、界面截图
 ```
 
@@ -81,12 +80,9 @@ assets/                  架构图、压测原始数据、界面截图
 - 20 MB 文件 multipart 上传：平均 **160.21 MB/s**，SHA-256 全部一致；21 MB 触发 413/1006。
 - 已知瓶颈：建连时全量 `userList` 广播存在 O(N²) 风暴（并发建连场景），广播为 O(N) 扇出；详见压测 README 的"瓶颈观察与建议"。
 
-## 课程报告
+## 关于课程报告
 
-- 报告母本：[report/report.md](report/report.md)（Markdown，可用 `report/build_docx.py --auto-toc` 重新生成 docx）
-- 终稿（docx / PDF）：见 [GitHub Releases](https://github.com/Versifine/lanchat/releases)
-- 图表与压测原始数据：[report/figs](report/figs)、[assets/bench](assets/bench)
-- 报告排版说明：[report/README.md](report/README.md)
+课程报告（Word/PDF）、报告源文件与个人材料**不随本仓库发布**，通过课程提交渠道单独提交。仓库只包含可运行工程、设计文档与测试/压测数据。
 
 ## AI 工程化说明
 

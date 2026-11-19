@@ -75,7 +75,7 @@ loupe report/figs/fig-05-01-architecture.png &
 
 # WS7 结果页：报告 PDF 用本地静态服务（flatpak Chrome 读不到 ~/Projects）
 mkdir -p /tmp/lanchat-showcase
-cp "report/课程报告-（姓名）-（学号）.pdf" /tmp/lanchat-showcase/lanchat-report.pdf
+cp "report/课程报告.pdf" /tmp/lanchat-showcase/lanchat-report.pdf
 (cd /tmp/lanchat-showcase && nohup python3 -m http.server 8000 --bind 127.0.0.1 >/tmp/lanchat-http.log 2>&1 &)
 "$CHROME" --new-window "http://localhost:8000/lanchat-report.pdf" &
 "$CHROME" --new-window "https://github.com/Versifine/lanchat/releases/tag/v1.0.0" &
@@ -132,7 +132,7 @@ wf-recorder -o HDMI-A-1 -r 30 \
 **屏幕**：WS1，两个 Chrome 窗口并排（爱丽丝停在登录页，鲍勃在群聊）。
 
 **台词（一段完整介绍，可直接念）**：
-"老师好，我是计算机科学与技术 24-4 班的（姓名）。我的课程项目是 **LanChat 局域网聊天室**，一个前后端分离的 B/S 即时通信系统。浏览器端用 Vue 3、Vite 和 Element Plus；服务端是 Java 21 加 Spring Boot 3.5，数据存 SQLite，登录用 JWT，实时消息用 WebSocket，另外还有 REST 接口和 Swagger 文档。后端目前 72 个 Java 文件，前端 18 个源文件，自动化测试 160 个用例。项目已经发到 GitHub 的 Versifine/lanchat，有 v1.0 Release，配套 26 页课程报告。下面我分四部分讲：**功能全貌、开发过程的思路、AI 工程化怎么用，最后是系统架构和关键代码**。"
+"老师好，我是本课程的学生。我的课程项目是 **LanChat 局域网聊天室**，一个前后端分离的 B/S 即时通信系统。浏览器端用 Vue 3、Vite 和 Element Plus；服务端是 Java 21 加 Spring Boot 3.5，数据存 SQLite，登录用 JWT，实时消息用 WebSocket，另外还有 REST 接口和 Swagger 文档。后端目前 72 个 Java 文件，前端 18 个源文件，自动化测试 160 个用例。项目已经发到 GitHub 的 Versifine/lanchat，有 v1.0 Release，配套 26 页课程报告。下面我分四部分讲：**功能全貌、开发过程的思路、AI 工程化怎么用，最后是系统架构和关键代码**。"
 
 ---
 
@@ -372,7 +372,7 @@ LanChat 后端启动完成: REST=http://localhost:8082/api, WebSocket=ws://local
 | 架构分层、数据表、安全设计 | `report/figs/fig-05-01-architecture.png`、`docs/SPEC.md` |
 | SDD 流程 | `report/figs/fig-08-01-sdd-workflow.png`、`docs/ai-devlog.md` |
 | 代码行为 | 代码走读点名的三个源文件 |
-| 26 页报告与发布 | `report/课程报告-（姓名）-（学号）.pdf`、GitHub Release |
+| 报告与发布 | 课程报告 PDF、GitHub 仓库 |
 
 ---
 
@@ -405,10 +405,10 @@ sleep 6
 ## 附：录后收尾
 
 1. 检查：`ffprobe -hide_banner ~/Videos/lanchat-demo-*.mp4 | grep -E 'Stream|Duration'`
-2. 命名：`LanChat项目介绍-（姓名）-（学号）.mp4`
+2. 命名：`LanChat项目介绍.mp4`
 3. 如超过 7:00，按第 7 节删减重录或剪辑（优先压前两段）。
 4. 需要转码：`ffmpeg -i 原始.mp4 -c:v libopenh264 -b:v 8M -c:a aac -b:a 128k 最终.mp4`
-5. 与服务一起提交：`（学号）_（姓名）.zip` 与 GitHub 地址。
+5. 与服务一起提交：按【学号_姓名】命名的压缩包与 GitHub 地址。
 6. 关闭录制服务：`pkill -f 'lanchat-backend.jar'`、`pkill -f 'http.server 8000'`
 
 ---

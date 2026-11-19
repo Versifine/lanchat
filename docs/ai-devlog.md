@@ -93,11 +93,11 @@
 
 - **report-writer 完成**（task-4 completed）：`report/report.md` 约 1.05 万字正文（build_docx 统计 13,036 字符），10 章 + 参考文献 + 附录；12 张图、11 张表、4 段代码；PDF 26 页；静态目录 46/46 条页码回读一致；全部数字来自 `assets/bench/` 与 `assets/test-report/`，并如实写明 1000 连接未测、500 连接未做 10 分钟长稳、userList O(N²) 瓶颈、吞吐/延迟不同运行点。
 - 版式修复：`report/build_docx.py` 修复图片行距被裁、表格强制同页、目录行高过大三处问题（备份 `/tmp/build_docx.py.bak`），页数收敛到 26 页。
-- **Lead 终验**：`mvn test` 160/160 全绿（最终代码回归）；PDF 逐页抽查（封面/目录/AI 章/达成分析/图表）；封面信息已填（（学院） / （班级） / （姓名） / （学号） / （教师））。
+- **Lead 终验**：`mvn test` 160/160 全绿（最终代码回归）；PDF 逐页抽查（封面/目录/AI 章/达成分析/图表）；封面信息已填写完整（学院、班级、姓名、学号、任课教师）。
 - **发布**（用户 2026-11-18 批准"随意发布"）：
   - 公开仓库 https://github.com/Versifine/lanchat（main 分支已推送全部代码与文档）；
   - Tag `v1.0.0` + Release，附件为 ASCII 命名的报告 docx/pdf（避免中文文件名被 GitHub 资产 API 转义）。
-- **打包**：`（学号）_（姓名）.zip`（52.4 MB，315 文件）含：报告 docx/pdf、可执行 `lanchat.jar`、运行说明.txt、源码（backend/frontend）、docs/skills/scripts/report（母本+图表）、assets（截图/压测数据/测试报告）。
+- **打包**：按【学号_姓名】命名的提交压缩包（约 48 MB）含：报告 docx/pdf、可执行 `lanchat.jar`、运行说明.txt、源码（backend/frontend）、docs/skills/scripts/report（母本+图表）、assets（截图/压测数据/测试报告）。
 - **收尾状态**：8081 单服务实例仍在运行（演示数据：alice/alice123、bob/bob12345），供用户当场查看；数据库与日志为 gitignored 运行数据，不进入压缩包与仓库。
 
 ## 2026-11-18 17:30–17:45 视觉重构：去彩色渐变，改为 editorial indie
