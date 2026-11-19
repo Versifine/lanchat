@@ -1,7 +1,7 @@
 # LanChat 录屏讲稿（开发过程 / AI 工程化 / 架构 / 代码为主）
 
 > 用途：在本机录一段项目介绍视频发给课程老师，**不需要上台**。
-> 默认时长约 **6:45**（内容比 5 分钟版充实：开场项目介绍、Shell 一条命令拉起服务、完整功能演示、开发思路、AI 开发配合 SDD 流程图、架构图逐节点讲解、代码走读）。若必须压到 5 分钟，见第 7 节删减表。
+> 默认 **主选版约 9:20**：开场项目介绍、Shell 一条命令拉起服务、完整功能演示、开发思路、AI 开发配合 SDD 流程图、架构图逐节点讲解、代码走读主选 3 段（WS 入口、离线补发事务、前端连接管理）。WS6 另备 4 段加讲台词，时间富余或老师追问时补讲，全部讲完约 **11:20**。若必须压到 5–6 分钟，见第 7 节删减表。
 > 真实性约束见第 6 节：**不预设假聊天记录、不编未发生的故事**，所有说法都有仓库内证据。
 
 ---
@@ -47,7 +47,7 @@
 | WS3 | 开发过程 | VS Code：`docs/SPEC.md`、`docs/api.md`、`skills/lanchat-sdd/SKILL.md`、`docs/ai-devlog.md` |
 | WS4 | AI 开发图 | `loupe` 打开 `report/figs/fig-08-01-sdd-workflow.png` |
 | WS5 | 系统架构图 | `loupe` 打开 `report/figs/fig-05-01-architecture.png` |
-| WS6 | 代码走读 | VS Code：`ChatWebSocketHandler.java`、`JdbcMessageRepository.java`、`frontend/src/api/ws.js` |
+| WS6 | 代码走读 | VS Code：`ChatWebSocketHandler.java`、`ChatService.java`、`JdbcMessageRepository.java`、`AuthService.java`、`SessionRegistry.java`、`frontend/src/api/ws.js`（含可选集成测试 `WebSocketIntegrationTest.java`） |
 | WS7 | 结果 | Chrome：GitHub Release 页 + 本地报告 PDF（静态服务提供） |
 
 预开窗口命令（在仓库根目录执行）：
@@ -63,11 +63,15 @@ CHROME="$HOME/.local/share/flatpak/exports/bin/com.google.Chrome"
 # WS3 开发过程文档
 code -n docs/SPEC.md docs/api.md skills/lanchat-sdd/SKILL.md docs/ai-devlog.md &
 
-# WS6 代码走读
+# WS6 代码走读（后端 5 个 + 前端 1 个；建议左后右前分屏，其余用 Ctrl+P 切换）
 code -n \
   backend/src/main/java/com/lanchat/adapter/in/ws/ChatWebSocketHandler.java \
+  backend/src/main/java/com/lanchat/application/service/ChatService.java \
   backend/src/main/java/com/lanchat/adapter/out/persistence/JdbcMessageRepository.java \
-  frontend/src/api/ws.js &
+  backend/src/main/java/com/lanchat/application/service/AuthService.java \
+  backend/src/main/java/com/lanchat/infrastructure/websocket/SessionRegistry.java \
+  frontend/src/api/ws.js \
+  backend/src/test/java/com/lanchat/integration/WebSocketIntegrationTest.java &
 
 # WS4 AI 开发流程图 / WS5 系统架构图
 loupe report/figs/fig-08-01-sdd-workflow.png &
@@ -110,7 +114,7 @@ wf-recorder -o HDMI-A-1 -r 30 \
 
 ---
 
-## 2. 时间轴（总计 6:45）
+## 2. 时间轴（主选 9:20；加讲全讲约 11:20）
 
 | 时间 | 内容 | 工作区 | 详略 |
 |---|---|---|---|
@@ -120,8 +124,8 @@ wf-recorder -o HDMI-A-1 -r 30 \
 | 2:55–4:10 | 开发过程思路（为什么规格先行、契约、架构选型、数据库、实时方案、安全） | WS3 | 重点 |
 | 4:10–4:50 | AI 开发：对照 SDD 流程图讲（规格→Agent→审批→回需求→验证→发布） | WS4 | 重点 |
 | 4:50–6:00 | 系统架构：对照架构图逐层/逐箭头讲清楚 | WS5 | 重点 |
-| 6:00–6:30 | 代码走读：WS 消息处理 / 离线补发 / 前端连接管理 | WS6 | 重点 |
-| 6:30–6:45 | 结果与收尾 | WS7 | 必留 |
+| 6:00–9:05 | 代码走读：主选 WS 入口 / 离线补发事务 / 前端连接管理（约 3:05）；代码 2、4、5、7 为加讲（+2:10） | WS6 | 重点（本次扩写） |
+| 9:05–9:20 | 结果与收尾 | WS7 | 必留 |
 
 ---
 
@@ -132,7 +136,7 @@ wf-recorder -o HDMI-A-1 -r 30 \
 **屏幕**：WS1，两个 Chrome 窗口并排（爱丽丝停在登录页，鲍勃在群聊）。
 
 **台词（一段完整介绍，可直接念）**：
-"老师好，我是本课程的学生。我的课程项目是 **LanChat 局域网聊天室**，一个前后端分离的 B/S 即时通信系统。浏览器端用 Vue 3、Vite 和 Element Plus；服务端是 Java 21 加 Spring Boot 3.5，数据存 SQLite，登录用 JWT，实时消息用 WebSocket，另外还有 REST 接口和 Swagger 文档。后端目前 72 个 Java 文件，前端 18 个源文件，自动化测试 160 个用例。项目已经发到 GitHub 的 Versifine/lanchat，有 v1.0 Release，配套 26 页课程报告。下面我分四部分讲：**功能全貌、开发过程的思路、AI 工程化怎么用，最后是系统架构和关键代码**。"
+"老师好，我是本课程的学生。我的课程项目是 **LanChat 局域网聊天室**，一个前后端分离的 B/S 即时通信系统。浏览器端用 Vue 3、Vite 和 Element Plus；服务端是 Java 21 加 Spring Boot 3.5，数据存 SQLite，登录用 JWT，实时消息用 WebSocket，另外还有 REST 接口和 Swagger 文档。后端目前 72 个 Java 文件，前端 18 个源文件，自动化测试 160 个用例。项目已经发到 GitHub 的 Versifine/lanchat，有 v1.0 Release，配套 27 页课程报告。下面我分四部分讲：**功能全貌、开发过程的思路、AI 工程化怎么用，最后是系统架构和关键代码**。"
 
 ---
 
@@ -292,33 +296,80 @@ LanChat 后端启动完成: REST=http://localhost:8082/api, WebSocket=ws://local
 
 ---
 
-### 6:00–6:30 代码走读（WS6，重点）
+### 6:00–9:05 代码走读（WS6，重点）
 
-**屏幕**：WS6，VS Code 左半屏后端，右半屏前端。
+**屏幕**：WS6，VS Code 左半屏后端、右半屏前端。后端 5 个文件、前端 1 个文件；用 `Ctrl+P` 按文件名切换，讲哪个开哪个，不要把六个文件都摊在屏幕上。
 
-**代码 1：`ChatWebSocketHandler.java`（约 15 秒）**
+**讲法**：主选台词是代码 1、3、6（约 3:05）；代码 2、4、5、7 是加讲，时间富余或老师追问时再展开。
 
-**台词**：
-"WebSocket 收到聊天消息后，主流程在这里。先从会话属性里拿到 JWT 解出的用户身份，不信任消息体里的发送者字段。然后校验消息长度和频率限流。再交给应用层落库。最后根据有没有接收人，决定群聊广播还是私聊推送。Handler 只做协议转换。"
-
-**代码 2：`JdbcMessageRepository.java`（约 10 秒）**
+**代码 1（主选，约 1:10）：`ChatWebSocketHandler.java`**
 
 **台词**：
-"离线补发的关键在这段。用户上线时，服务端在一个事务里查出所有未投递的私聊，统一把 delivered 置 1，避免并发登录时重复补发。SQL 全部参数化。"
+"先看 WebSocket 入口。这个类继承 Spring 的 TextWebSocketHandler，只做协议转换，不写业务规则。
 
-**代码 3：`frontend/src/api/ws.js`（约 10 秒）**
+连接建立时，它从握手阶段解析出的 JWT 里取出用户身份，把会话注册进在线表，然后把当前在线列表广播给所有在线用户。收到文本帧时，先按 sessionId 找回会话；如果这个会话不在在线表里，说明没有通过认证，直接按 4401 关闭。否则先刷新心跳时间戳，再按消息类型分发：ping 回 pong，chat 交给 handleChat，其他类型回一个协议错误帧。
+
+handleChat 只读两个字段：接收人 to 和内容 content。发送者身份一律用会话里的 JWT 身份，消息体里如果带了 from 或 sender，一律忽略，所以客户端伪造身份没有用。解析完调用应用层的 ChatService。
+
+另外两个细节：发送有 5 秒超时和 256 KB 缓冲上限，防止慢客户端把服务端拖住；JSON 解析失败、业务异常、未预期异常分别回不同的 error 帧，但连接不主动断，客户端可以继续用。"
+
+**代码 2（加讲，约 0:45）：`ChatService.java`**
 
 **台词**：
-"前端只做连接管理：用 token 建连，10 秒心跳，断线后按 1 到 30 秒指数退避重连，消息按类型分发给状态层。消息按纯文本渲染，防 XSS。这些代码是 AI agent 按前面的规格和评测集产出的，我逐块 review 和验收，报告第 8 章有记录。"
+"再看应用层。send 方法先做三件校验：内容不能为空，长度不超过 2000 个字符，再按用户 id 做每秒 20 条的消息限流。然后从用户仓储里查发送者，确认账号还有效。
+
+群聊时，先插入消息，delivered 记为 true，再让实时通知器广播。私聊时，先判断接收方是否在线，消息落库时把 delivered 记成接收方在线状态，然后定向推给接收方，同时给发送者回显一条，前端据此拿到服务端生成的 id 和时间。
+
+离线消息不在 send 里处理，而是登录后单独调用 replayOfflineMessages，走一遍补发流程。"
+
+**代码 3（主选，约 0:40）：`JdbcMessageRepository.java`**
+
+**台词**：
+"离线补发的关键在 claimUndelivered。这里用 TransactionTemplate 包住整个过程：先查出这个用户所有 delivered 等于 0 的私聊 id，按 id 升序；然后批量把 delivered 置为 1；最后按这批 id 把完整消息查出来返回。三步在同一个事务里，并发登录时只有一个请求能领到这批消息，另一个请求查到的已经是空列表，所以不会重复补发。
+
+SQL 里只有 IN 列表的占位符是按 id 数量拼的，其他全部参数化传入；id 是 long，不存在注入。"
+
+**代码 4（加讲，约 0:40）：`AuthService.java`**
+
+**台词**：
+"认证在 AuthService。注册时校验用户名是 3 到 20 位字母数字下划线，密码 6 到 32 位，然后调用 PasswordHasher。实现在 Pbkdf2PasswordHasher：PBKDF2WithHmacSHA256，12 万次迭代，16 字节随机盐，存储格式是迭代次数、盐、哈希四段拼起来。
+
+登录时先看限流器有没有把这个用户名锁住，失败记录次数，5 次失败锁一分钟。成功就用同样的参数验哈希，然后 TokenIssuer 签发 HS256 的 JWT，里面放用户 id 和用户名，有效期 24 小时。REST 请求和 WebSocket 握手共用同一套签发与校验实现。"
+
+**代码 5（加讲，约 0:30）：`SessionRegistry.java`**
+
+**台词**：
+"在线表在 SessionRegistry，两张 ConcurrentHashMap：一张按用户 id 找会话，一张按 sessionId 找用户，两个方向都是 O(1)。
+
+注册时如果这个用户已经有会话，会踢掉旧连接，并给旧连接发一条系统提示，这就是录屏里重复登录互斥的效果。发送时对单个会话加锁，保证同一连接上的帧不会交叉写乱；广播先拿一份快照，再逐个发送。"
+
+**代码 6（主选，约 1:20）：`frontend/src/api/ws.js`**
+
+**台词**：
+"前端这个文件只负责连接管理。buildWebSocketUrl 把 token 拼到查询参数上，页面是 https 就用 wss。
+
+RECONNECT_DELAYS 是 1、2、4、8、16、30 秒的退避序列；连接关闭后按当前重试次数取对应间隔，连上后次数清零。每 10 秒发一次 ping。
+
+收到消息按 type 分发给 message、userList、file、system、pong、error 六个处理函数。如果关闭码是 4401，说明 token 失效，直接清本地状态回登录页，不再重连。
+
+这里没有乐观发送：用户点发送只是把消息交给连接，界面等收到服务端回显才渲染，这样消息 id、时间戳和顺序都以服务端为准。"
+
+**代码 7（加讲，约 0:25）：集成测试 `WebSocketIntegrationTest.java`**
+
+**台词**：
+"这些行为都有集成测试盯着。比如这个测试类里，群聊用例断言两个客户端都收到同一条消息，私聊用例断言只有对方收到，离线补发用例断言重登后只补发一次。测试和代码是一起交付的。"
+
+**收尾一句（约 5 秒）**：
+"这些代码是 AI agent 按前面的规格和评测集产出的，我逐块 review 和验收；测试阶段发现的两个缺陷也是在这个流程里修掉并回归的，报告第 8 章有记录。"
 
 ---
 
-### 6:30–6:45 结果与收尾（WS7）
+### 9:05–9:20 结果与收尾（WS7）
 
 **屏幕**：切 WS7，Chrome 停在 GitHub Release 页；可切到报告 PDF 第一页。
 
 **台词**：
-"最后是结果。160 个用例全部通过。500 并发连接下，消息延迟 P50 10.1、P95 21.4、P99 31.2 毫秒，投递率 100%。20MB 文件上传平均 160MB/s。轮询对比实验里，WebSocket 的延迟比 3 秒轮询低一个数量级。项目已经发在 GitHub 的 Versifine/lanchat，有 v1.0 Release 和 26 页课程报告，压缩包里一条 `java -jar lanchat.jar` 就能复现。以上是我的项目介绍，谢谢老师。"
+"最后是结果。160 个用例全部通过。500 并发连接下，消息延迟 P50 10.1、P95 21.4、P99 31.2 毫秒，投递率 100%。20MB 文件上传平均 160MB/s。轮询对比实验里，WebSocket 的延迟比 3 秒轮询低一个数量级。项目已经发在 GitHub 的 Versifine/lanchat，有 v1.0 Release 和 27 页课程报告，压缩包里一条 `java -jar lanchat.jar` 就能复现。以上是我的项目介绍，谢谢老师。"
 
 ---
 
@@ -371,7 +422,7 @@ LanChat 后端启动完成: REST=http://localhost:8082/api, WebSocket=ws://local
 | 两次方案回调、两个缺陷、审批 | `docs/ai-devlog.md`、`git log --oneline` |
 | 架构分层、数据表、安全设计 | `report/figs/fig-05-01-architecture.png`、`docs/SPEC.md` |
 | SDD 流程 | `report/figs/fig-08-01-sdd-workflow.png`、`docs/ai-devlog.md` |
-| 代码行为 | 代码走读点名的三个源文件 |
+| 代码行为 | 代码走读点名的 `ChatWebSocketHandler`、`ChatService`、`JdbcMessageRepository`、`AuthService`、`SessionRegistry` 与前端 `ws.js` |
 | 报告与发布 | 课程报告 PDF、GitHub 仓库 |
 
 ---
@@ -380,14 +431,15 @@ LanChat 后端启动完成: REST=http://localhost:8082/api, WebSocket=ws://local
 
 | 砍掉 | 节省 | 说明 |
 |---|---|---|
-| Shell 启动日志完整展示压到 15 秒（只留启动完成那几行） | 10s | 启动演示保留，减少等待镜头 |
+| Shell 启动日志压到 15 秒（只留启动完成的行） | 10s | 启动演示保留，减少等待镜头 |
 | 功能⑤离线补发 | 25s | 功能表里注明"离线补发已由测试覆盖"，或只在报告里讲 |
-| 功能⑧断线重连现场演示 | 20s | 默认就是可选项，不演示 |
-| 开发过程思路压到 45s | 30s | 只讲规格先行 + 契约 + 两个选型理由 |
+| 功能⑧断线重连现场演示 | 20s | 本来就是可选项，不演示 |
+| 功能段整体压到 70 秒（暗色、注册 tab 也略过） | 40s | 只保留登录、群聊、私聊、文件 |
+| 开发过程思路压到 45s | 30s | 只讲规格先行、契约、两三个选型理由 |
 | 架构讲解压到 45s | 25s | 只讲分层与依赖方向，卡片略过 |
-| 代码走读压到 20s | 10s | 只讲 `ChatWebSocketHandler` 一个类 |
+| WS6 压到 1:30（只讲代码 1 与代码 6 的前半段） | 2:15 | 加讲台词全部跳过 |
 
-按上表删减后约 **5:00**（6:45 − 2:00）；保留标"重点"的段落和开场这段话即可。
+按上表删减后约 **6:00**（9:20 − 3:20）。如果还要压到 5 分钟，再从功能段和结果段各压 30 秒：功能只留登录、群聊、文件；结果只留三个核心数字。
 
 ---
 
@@ -406,7 +458,7 @@ sleep 6
 
 1. 检查：`ffprobe -hide_banner ~/Videos/lanchat-demo-*.mp4 | grep -E 'Stream|Duration'`
 2. 命名：`LanChat项目介绍.mp4`
-3. 如超过 7:00，按第 7 节删减重录或剪辑（优先压前两段）。
+3. 如超过 10:00（加讲全讲约 11:20），按第 7 节删减重录或剪辑（优先压前两段和 WS6 加讲段）。
 4. 需要转码：`ffmpeg -i 原始.mp4 -c:v libopenh264 -b:v 8M -c:a aac -b:a 128k 最终.mp4`
 5. 与服务一起提交：按【学号_姓名】命名的压缩包与 GitHub 地址。
 6. 关闭录制服务：`pkill -f 'lanchat-backend.jar'`、`pkill -f 'http.server 8000'`
@@ -421,5 +473,5 @@ sleep 6
 - 把超过 60 个汉字的台词拆成短句，一句一个意思，方便口播；
 - 去掉"最大""显然"之类无证据的强化词和"不是……而是……"的对比句式；
 - 去掉"第一步/第二步"式机械编号，改成"我先说……接下来……再往下……最后"这类口语衔接；
-- 保留全部数字、指标、命令、文件名、账号与结论（160 用例、P50/P95/P99、1066 msg/s、160MB/s、26 页等均未改动）；
+- 保留全部数字、指标、命令、文件名、账号与结论（160 用例、P50/P95/P99、1066 msg/s、160MB/s、27 页等均未改动）；
 - 保留必要的技术限定与真实局限说明（1000 连接未测、userList 广播瓶颈）。
