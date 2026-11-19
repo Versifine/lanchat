@@ -12,7 +12,8 @@
 | SDD 材料 | `docs/SPEC.md`、`docs/api.md`、`docs/eval-plan.md`、`skills/lanchat-sdd/SKILL.md`、`docs/ai-devlog.md` | 已完成 |
 | 测试与压测数据 | `backend/src/test/`（160 用例全绿）、`tools/bench/`、`assets/bench/` | ✅ 完成 |
 | 界面截图 | `assets/screenshots/final-*.png`（生产单服务 2880×1800，7 张） | ✅ 完成 |
-| 打包压缩包 | `学号_姓名.zip`（含 jar/报告/源码/资料） | ✅ 已打包 |
+| 项目介绍视频 | `LanChat项目介绍.mp4`（9:12，1920×1200，H.264/AAC，78.9 MB） | ✅ 已录制 |
+| 打包压缩包 | `08233066_原诗斐.zip`（约 123 MB：src/ + 报告 docx/pdf + 视频） | ✅ 已打包 |
 | GitHub 仓库 | `https://github.com/Versifine/lanchat` + Release v1.0.0（报告 docx/pdf） | ✅ 已发布（2026-11-18，用户批准） |
 
 ## 2. 提交前检查清单
@@ -27,6 +28,28 @@
 - [ ] 截图：登录、注册、群聊、私聊、文件传输、暗色、重连、Swagger 各一张（真实单服务环境）
 - [ ] 压缩包：按【学号_姓名】命名，含报告 docx/pdf + 源码 + docs + 报告图表；不含 `target/`、`node_modules/`、`.venv/`、`data/`、`.git/`
 - [ ] GitHub：公开仓库、README 完善、Release v1.0、发布地址写入报告
+
+## 2.1 提交包结构（2026-11-19 最终版）
+
+```
+08233066_原诗斐.zip
+├── 课程报告.docx          # 报告 Word
+├── 课程报告.pdf           # 报告打印版
+├── LanChat项目介绍.mp4    # 项目介绍视频（9:12，1920×1200，H.264/AAC）
+└── src/                   # 工程代码与资料集中在这里，不在根目录散放
+    ├── backend/           # 后端源码（Spring Boot）
+    ├── frontend/          # 前端源码（Vue 3）
+    ├── docs/              # SPEC、接口契约、评测集、AI 开发日志
+    ├── skills/            # AI 工程化 skill
+    ├── scripts/           # 构建/启动/压测脚本
+    ├── assets/            # 压测数据、测试报告、截图
+    ├── lanchat.jar        # 可执行单 jar（含前端构建产物）
+    ├── 运行说明.txt       # 老师运行说明
+    └── README.md          # 项目说明
+```
+
+- 包大小约 **123 MB**（视频 76 MB + 代码/资料 48 MB + 报告 3.5 MB）。
+- 若课程平台有单文件大小限制，可把视频单独提交，压缩包只保留 `src/` 与报告（约 50 MB）。
 
 ## 3. 打包命令（待最终执行）
 
